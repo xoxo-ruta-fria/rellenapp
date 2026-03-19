@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>RellenApp XOXO ❄️</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Sora',sans-serif;background:#08101e;color:#e2ecf8;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:2px;}
+input,select{outline:none;font-family:'Sora',sans-serif;}
+select option{background:#0d1b33;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fu{animation:fadeUp .28s ease both;}
+.tog{position:relative;display:inline-block;width:44px;height:24px;}
+.tog input{opacity:0;width:0;height:0;}
+.sli{position:absolute;cursor:pointer;inset:0;background:#1e3a5f;border-radius:24px;transition:.2s;}
+.sli:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+input:checked+.sli{background:#f97316;}
+input:checked+.sli:before{transform:translateX(20px);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ═══════════════════════════════════════════════════════
+// INSUMOS REALES — SUCURSAL XOXO · RUTA FRÍA · MARZO 2026
+// Precios reales de la página del proveedor
+// ES = Entre Semana (Lun–Jue)  |  FS = Fin de Semana (Vie–Sáb)
+// ═══════════════════════════════════════════════════════
+const INSUMOS_BASE = [
+  {id:3035,      codigo:"3035",       nombre:"FG SPR MOLOTE DE PLATANO BESITOS 1 PZA",        unidad:"PZA", precio:5,      stockES:110, stockFS:150},
+  {id:3027,      codigo:"3027",       nombre:"FG SPR COL DE GARNACHAS 1 KG",                  unidad:"KG",  precio:17,     stockES:3,   stockFS:4},
+  {id:3017,      codigo:"3017",       nombre:"FG SPR SALSA VERDE DE CHILAQUIL 1 L",           unidad:"LT",  precio:56,     stockES:30,  stockFS:40},
+  {id:3011,      codigo:"3011",       nombre:"FG SPR PASTA DE FRIJOL 1 KG",                   unidad:"KG",  precio:47,     stockES:30,  stockFS:40},
+  {id:3015,      codigo:"3015",       nombre:"FG SPR MOLE COLORADITO SAZÓN 1 L",              unidad:"LT",  precio:70,     stockES:12,  stockFS:14},
+  {id:3016,      codigo:"3016",       nombre:"FG SPR SALSA DE GARNACHAS 1 L",                 unidad:"LT",  precio:54,     stockES:2,   stockFS:2},
+  {id:3042,      codigo:"3042",       nombre:"FG SPR SALSA RANCHERA 1 L",                     unidad:"LT",  precio:20,     stockES:30,  stockFS:35},
+  {id:100000466, codigo:"100000466",  nombre:"FG SPR CONCENTRADO DE JAMAICA 1 PZA",           unidad:"PZA", precio:70,     stockES:18,  stockFS:22},
+  {id:100001095, codigo:"100001095",  nombre:"FG SPR CONCENTRADO DE ARROZ 1 PZA",             unidad:"PZA", precio:81,     stockES:20,  stockFS:23},
+  {id:100001923, codigo:"100001923",  nombre:"FG SPR MEZCLA PARA HOT CAKES CEDIS BOLSA 1 KG", unidad:"KG",  precio:75,     stockES:4,   stockFS:6},
+  {id:3033,      codigo:"3033",       nombre:"FG SPR SALSA HABANERA 1 L",                     unidad:"LT",  precio:60,     stockES:10,  stockFS:12},
+  {id:3032,      codigo:"3032",       nombre:"FG SPR SALSA MORITA 1L",                        unidad:"LT",  precio:31,     stockES:10,  stockFS:12},
+  {id:100002539, codigo:"100002539",  nombre:"B SPR CHILES EN ESCABECHE 1 KG",                unidad:"KG",  precio:76,     stockES:4,   stockFS:4},
+  {id:3031,      codigo:"3031",       nombre:"FG SPR GUACACHILE 1 L",                         unidad:"LT",  precio:47,     stockES:10,  stockFS:12},
+  {id:3021,      codigo:"3021",       nombre:"FG SPR CARNE AL PASTOR 1 KG",                   unidad:"KG",  precio:113,    stockES:0,   stockFS:0},
+  {id:100000999, codigo:"100000999",  nombre:"FG SPR PECHUGA PORCIONADA 200 GR 1 PZA",        unidad:"PZA", precio:32,     stockES:70,  stockFS:90},
+  {id:100001934, codigo:"100001934",  nombre:"FG SPR CARNE DE GARNACHAS (100 GR) 1 PZA",      unidad:"PZA", precio:27,     stockES:15,  stockFS:25},
+  {id:100001933, codigo:"100001933",  nombre:"FG SPR PICADILLO DE POLLO (90 GR) 1 PZA",       unidad:"PZA", precio:17,     stockES:45,  stockFS:75},
+  {id:100001935, codigo:"100001935",  nombre:"FG SPR POLLO COCIDO (90 GR) 1 PZA",             unidad:"PZA", precio:25,     stockES:100, stockFS:145},
+  {id:100002541, codigo:"100002541",  nombre:"FG SPR FAJITAS DE POLLO (190 GR) 1 PZA",        unidad:"PZA", precio:27,     stockES:40,  stockFS:50},
+  {id:100002543, codigo:"100002543",  nombre:"FG SPR MINI HAMBURGUESA SIRLOIN (50 GR) 1PZ",   unidad:"PZA", precio:11,     stockES:20,  stockFS:30},
+  {id:100003194, codigo:"100003194",  nombre:"B SPR CHORIZO 50 GR 1 PZA",                     unidad:"PZA", precio:9,      stockES:75,  stockFS:115},
+  {id:100003208, codigo:"100003208",  nombre:"B SPR BARBACOA (90 GR) 1 PZA",                  unidad:"PZA", precio:27,     stockES:60,  stockFS:85},
+  {id:100003210, codigo:"100003210",  nombre:"B SPR CONSOME DE BARBACOA (50 GR) 1 PZA",       unidad:"PZA", precio:2,      stockES:55,  stockFS:70},
+  {id:100001798, codigo:"100001798",  nombre:"FG SPR FRIJOL DE OLLA 1 KG",                    unidad:"PZA", precio:30,     stockES:10,  stockFS:12},
+  {id:100002506, codigo:"100002506",  nombre:"FG SPR ADEREZO DULCE DE QUESOS 1 KG",           unidad:"KG",  precio:113,    stockES:1,   stockFS:1.25},
+  {id:100002505, codigo:"100002505",  nombre:"FG SPR COMPOTA DE FRUTOS ROJOS 1 KG",           unidad:"KG",  precio:196,    stockES:2,   stockFS:2},
+  {id:100002537, codigo:"100002537",  nombre:"FG SPR ATOLE DE AJONJOLI (200 ML) 1 PZA",       unidad:"PZA", precio:21,     stockES:7,   stockFS:10},
+  {id:1239,      codigo:"1239",       nombre:"B ICS QUESO DOBLE CREMA 1 KG",                  unidad:"KG",  precio:210,    stockES:3,   stockFS:4},
+  {id:100003355, codigo:"100003355",  nombre:"FG SPR CABEZA DE PUERCO 90GR 1 PZA",            unidad:"PZA", precio:20,     stockES:40,  stockFS:45},
+  {id:100003195, codigo:"100003195",  nombre:"FG ICS FILETE DE TILAPIA",                       unidad:"PZA", precio:0,      stockES:30,  stockFS:40},
+  {id:100003209, codigo:"100003209",  nombre:"SOPA DE TORTILLA BLISTER 300 ML",               unidad:"PZA", precio:21,     stockES:15,  stockFS:20},
+  {id:100003449, codigo:"100003449",  nombre:"FG SPR SALSA CAMPESINA 1 KG",                   unidad:"KG",  precio:175,    stockES:2,   stockFS:4},
+  {id:100003803, codigo:"100003803",  nombre:"FG SPR SALSA DE PESCADO 1 L",                   unidad:"PZA", precio:0,      stockES:2,   stockFS:2},
+  {id:1000002408,codigo:"1000002408", nombre:"FG ICS MANTEQUILLA GLORIA (90 G) 1 PZA",        unidad:"PZA", precio:22.67,  stockES:4,   stockFS:8},
+];
+
+// ═══════════════════════════════════════════════════════
+// STORAGE & UTILS
+// ═══════════════════════════════════════════════════════
+const SK = 'rellenapp_xoxo_v2';
+const loadDB = () => { try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch{return null;} };
+const saveDB = d => { try{localStorage.setItem(SK,JSON.stringify(d));}catch{}; };
+
+const HOY  = new Date().toISOString().slice(0,10);
+const AYER = new Date(Date.now()-86400000).toISOString().slice(0,10);
+
+const esFDS     = f => { const d=new Date(f+'T12:00:00').getDay(); return d===5||d===6; };
+const nombreDia = f => new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+const tipoRel   = (f,ov) => ov!==null ? ov : (esFDS(f)?'FS':'ES');
+const stockRel  = (ins,tipo) => tipo==='FS' ? ins.stockFS : ins.stockES;
+const fmt$      = n => n===0?'—':'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt2      = n => Number(n)%1===0 ? String(Number(n)) : Number(n).toFixed(2);
+
+function calcDia(insumos, reg, tipo){
+  return insumos.map(ins=>{
+    const rel  = stockRel(ins, tipo);
+    const ini  = reg?.stockInicio?.[ins.id] ?? 0;
+    const rec  = reg?.recibido?.[ins.id]    ?? 0;
+    const fin  = reg?.conteoFin?.[ins.id]   ?? null;
+    const disp = ini + rec;
+    const cons = fin!==null ? Math.max(0, disp-fin) : null;
+    const pedir= Math.max(0, rel - (fin!==null ? fin : ini));
+    return {...ins, rel, ini, rec, disp, fin, cons, pedir};
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// IMPORTADOR DUAL — detecta automáticamente el formato
+// Formato A: export propio RellenApp (col 0=CLAVE, col 7=EXISTENCIA FINAL)
+// Formato B: EXISTENCIAS PED PRODU (col B=clave fría, col E=existencias reales)
+// ═══════════════════════════════════════════════════════
+function importarExcel(file, callback){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const wb   = XLSX.read(e.target.result, {type:'array'});
+      // Intentar cada hoja hasta encontrar datos reconocibles
+      let resultado = null;
+      for(const sheetName of wb.SheetNames){
+        const ws   = wb.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        // ── Detectar formato ──
+        // Buscar fila encabezado que tenga "CLAVE" en alguna columna
+        let hiA=-1, hiB=-1;
+        for(let i=0;i<Math.min(data.length,15);i++){
+          const row = data[i].map(v=>String(v).trim().toUpperCase());
+          // Formato A (propio): CLAVE en col 0
+          if(row[0]==='CLAVE' && row.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'))>0){
+            hiA=i; break;
+          }
+          // Formato B (existencias produ): CLAVE en col 1 (B), EXISTENCIAS REALES en col 4 (E)
+          if(row[1]==='CLAVE' && (row[4]==='EXISTENCIAS REALES'||row[4].includes('EXISTENCIAS'))){
+            hiB=i; break;
+          }
+        }
+
+        if(hiA===-1 && hiB===-1) continue; // esta hoja no tiene el formato, probar siguiente
+
+        const res={}; let n=0;
+
+        if(hiA>=0){
+          // Formato A — propio RellenApp
+          const hdrs = data[hiA].map(h=>String(h).toUpperCase());
+          const cFin = hdrs.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'));
+          for(let i=hiA+1;i<data.length;i++){
+            const row=data[i];
+            const claveStr=String(row[0]).trim();
+            const val=row[cFin];
+            if(!claveStr||val===''||val===null) continue;
+            const num=parseFloat(val);
+            if(isNaN(num)||num<0) continue;
+            const ins=INSUMOS_BASE.find(x=>x.codigo===claveStr);
+            if(!ins) continue;
+            res[ins.id]=num; n++;
+          }
+        } else {
+          // Formato B — EXISTENCIAS PED PRODU
+          // Col B (idx 1) = clave, Col E (idx 4) = existencias reales
+          for(let i=hiB+1;i<data.length;i++){
+            const row=data[i];
+            const claveRaw=row[1];
+            const val=row[4];
+            if(claveRaw===''||claveRaw===null||claveRaw===undefined) continue;
+            // Limpiar clave — viene como "3035.0" o número flotante
+            let claveStr='';
+            try{ claveStr=String(parseInt(float_parse(claveRaw))); }catch{ claveStr=String(claveRaw).replace('.0','').trim(); }
+            if(!claveStr||claveStr==='NaN'||claveStr==='undefined') continue;
+            if(val===''||val===null||val===undefined) continue;
+            const num=parseFloat(val);
+            if(isNaN(num)||num<0) continue;
+            const ins=INSUMOS_BASE.find(x=>x.codigo===claveStr);
+            if(!ins) continue;
+            res[ins.id]=num; n++;
+          }
+        }
+
+        if(n>0){
+          resultado={ok:true, data:res, n, formato:hiA>=0?'RellenApp':'Existencias Prod'};
+          break;
+        }
+      }
+
+      if(!resultado){
+        callback({error:'No reconocí el formato. Importa el archivo de Existencias Ped Produ o el que exportó RellenApp.'});
+        return;
+      }
+      callback(resultado);
+    }catch(err){ callback({error:'Error leyendo archivo: '+err.message}); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// helper para parsear claves con .0
+function float_parse(v){
+  if(typeof v==='number') return v;
+  return parseFloat(String(v));
+}
+
+// ═══════════════════════════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════════════════════════
+function exportarExcel(fecha, insumos, reg, tipo){
+  const calc = calcDia(insumos, reg, tipo);
+  const wb   = XLSX.utils.book_new();
+  const tit  = `RellenApp XOXO ❄️ · ${nombreDia(fecha)} · ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`;
+
+  const wsData = [
+    [tit,'','','','','','','',''],
+    ['CLAVE','NOMBRE','U.M','RELLENABLE','INICIO DÍA','RECIBIDO','DISPONIBLE','EXISTENCIA FINAL ← LLENAR AQUÍ','PEDIR SUGERIDO'],
+    ...calc.map(i=>[i.codigo,i.nombre,i.unidad,i.rel,i.ini,i.rec,i.disp,i.fin!==null?i.fin:'',i.pedir])
+  ];
+
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols']=[{wch:12},{wch:44},{wch:5},{wch:11},{wch:11},{wch:10},{wch:11},{wch:26},{wch:14}];
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
+
+  const nRows=calc.length;
+  // Estilo columna amarilla filas datos
+  for(let r=2;r<=nRows+1;r++){
+    const ref=XLSX.utils.encode_cell({r,c:7});
+    if(!ws[ref]) ws[ref]={v:'',t:'n'};
+    ws[ref].s={fill:{patternType:'solid',fgColor:{rgb:'FFF9C4'}},font:{bold:true,sz:11,color:{rgb:'856404'}},border:{top:{style:'medium',color:{rgb:'F59E0B'}},bottom:{style:'medium',color:{rgb:'F59E0B'}},left:{style:'medium',color:{rgb:'F59E0B'}},right:{style:'medium',color:{rgb:'F59E0B'}}},alignment:{horizontal:'center'}};
+  }
+  // Header fila 1
+  ['CLAVE','NOMBRE','U.M','RELLENABLE','INICIO DÍA','RECIBIDO','DISPONIBLE','EXISTENCIA FINAL ← LLENAR AQUÍ','PEDIR SUGERIDO'].forEach((_,ci)=>{
+    const ref=XLSX.utils.encode_cell({r:1,c:ci});
+    if(!ws[ref]) return;
+    ws[ref].s={fill:{patternType:'solid',fgColor:{rgb:ci===7?'F59E0B':'0F2A4A'}},font:{bold:true,color:{rgb:'FFFFFF'},sz:9},alignment:{horizontal:'center',wrapText:true}};
+  });
+  if(ws['A1']) ws['A1'].s={font:{bold:true,sz:11,color:{rgb:'0F2A4A'}},fill:{patternType:'solid',fgColor:{rgb:'D6E8FF'}}};
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Conteo del Día');
+
+  // Hoja pedido con costos
+  const pedItems=calc.filter(i=>i.pedir>0);
+  const totalCosto=pedItems.reduce((s,i)=>s+i.pedir*i.precio,0);
+  const wsPed=XLSX.utils.aoa_to_sheet([
+    [`PEDIDO DE PRODUCCIÓN FRÍA — ${nombreDia(fecha)} — ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`,'','','','',''],
+    ['CLAVE','NOMBRE','U.M','EXISTENCIA','RELLENABLE','A PEDIR','PRECIO UNIT.','COSTO'],
+    ...pedItems.map(i=>[i.codigo,i.nombre,i.unidad,fmt2(i.fin??i.ini),i.rel,i.pedir,i.precio>0?i.precio:'—',i.precio>0?i.pedir*i.precio:'—']),
+    ['','','','','','TOTAL PIEZAS',pedItems.reduce((s,i)=>s+i.pedir,0),''],
+    ['','','','','','COSTO TOTAL','',totalCosto>0?totalCosto:'—'],
+  ]);
+  wsPed['!cols']=[{wch:12},{wch:44},{wch:6},{wch:11},{wch:11},{wch:10},{wch:13},{wch:13}];
+  XLSX.utils.book_append_sheet(wb, wsPed, 'Pedido Sugerido');
+
+  XLSX.writeFile(wb, `RellenApp_XOXO_${fecha}.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════
+// APP
+// ═══════════════════════════════════════════════════════
+function App(){
+  const stored=loadDB();
+  const [db,    setDb]    = React.useState(()=>stored||{insumos:INSUMOS_BASE.map(i=>({...i})),registros:{}});
+  const [fecha, setFecha] = React.useState(HOY);
+  const [vista, setVista] = React.useState('dia');
+  const [fase,  setFase]  = React.useState('recibido');
+  const [busq,  setBusq]  = React.useState('');
+  const [toast, setToast] = React.useState(null);
+  const [modIns,setModIns]= React.useState(false);
+  const [formIns,setFormIns]=React.useState({});
+  const [confCierre,setConfCierre]=React.useState(false);
+  const [importando,setImportando]=React.useState(false);
+  const [importRes,setImportRes]=React.useState(null);
+  const fileRef=React.useRef();
+
+  React.useEffect(()=>{ saveDB(db); },[db]);
+
+  // Auto-transferir conteo final de ayer → inicio de hoy
+  React.useEffect(()=>{
+    if(fecha===HOY && !db.registros[HOY]?.stockInicio){
+      const ra=db.registros[AYER];
+      if(ra?.conteoFin && Object.keys(ra.conteoFin).length>0){
+        setDb(d=>({...d,registros:{...d.registros,[HOY]:{...d.registros[HOY],stockInicio:{...ra.conteoFin}}}}));
+      }
+    }
+  },[]);
+
+  const reg     = db.registros[fecha]||{};
+  const cerrado = !!reg.cerrado;
+  const ovRel   = reg.overrideRel??null;
+  const tipo    = tipoRel(fecha, ovRel);
+  const calc    = calcDia(db.insumos, reg, tipo);
+  const filtrado= calc.filter(i=>!busq||i.nombre.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq));
+
+  const showToast=(msg,t='ok')=>{setToast({msg,t});setTimeout(()=>setToast(null),3200);};
+
+  const setVal=(campo,id,v)=>{
+    const val=v===''?0:Math.max(0,Number(v));
+    setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],[campo]:{...(d.registros[fecha]?.[campo]||{}),[id]:val}}}}));
+  };
+
+  const setOverride=val=>setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],overrideRel:val}}}));
+
+  const cerrarDia=()=>{
+    setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],cerrado:true}}}));
+    showToast('✅ Día cerrado — pedido generado');
+    setFase('pedido'); setConfCierre(false);
+  };
+
+  const guardarInsumo=()=>{
+    if(!formIns.id) return;
+    setDb(d=>({...d,insumos:d.insumos.map(i=>i.id===formIns.id?{...formIns,stockES:+formIns.stockES,stockFS:+formIns.stockFS,precio:+formIns.precio}:i)}));
+    showToast('✅ Actualizado'); setModIns(false);
+  };
+
+  const handleExportar=()=>{
+    exportarExcel(fecha, db.insumos, reg, tipo);
+    showToast('📥 Excel descargado — llena col amarilla e importa');
+  };
+
+  const handleImportar=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    setImportando(true); setImportRes(null);
+    importarExcel(f, result=>{
+      setImportando(false);
+      if(result.error){ setImportRes({error:result.error}); showToast('❌ '+result.error,'err'); return; }
+      setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],conteoFin:{...(d.registros[fecha]?.conteoFin||{}),...result.data}}}}));
+      setImportRes({ok:true,n:result.n,fmt:result.formato});
+      showToast(`✅ ${result.n} existencias importadas (${result.formato})`);
+      setFase('conteo');
+    });
+    e.target.value='';
+  };
+
+  // KPIs
+  const conConteo  = calc.filter(i=>i.fin!==null).length;
+  const sinConteo  = calc.length - conConteo;
+  const alertas    = calc.filter(i=>i.fin!==null && i.fin<i.rel*0.25);
+  const totalPedir = calc.reduce((s,i)=>s+i.pedir,0);
+  const costoPedir = calc.reduce((s,i)=>s+i.pedir*i.precio,0);
+
+  // Estilos base
+  const INP={width:'100%',padding:'8px 10px',borderRadius:7,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:13,fontFamily:'DM Mono,monospace'};
+  const BTN=(bg,col='#fff',p='8px 14px')=>({padding:p,borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:bg,color:col,fontFamily:'Sora,sans-serif',whiteSpace:'nowrap'});
+  const CARD=(bc='#1a3050')=>({background:'#0d1b33',borderRadius:11,border:`1px solid ${bc}`});
+  const TAG=(bg,col)=>({padding:'2px 7px',borderRadius:16,fontSize:10,fontWeight:700,background:bg,color:col,display:'inline-block'});
+
+  const NAV =[{id:'dia',icon:'📅',l:'Hoy'},{id:'catalogo',icon:'📦',l:'Catálogo'},{id:'historial',icon:'📊',l:'Historial'},{id:'pedido',icon:'🛒',l:'Pedido'}];
+  const FASES=[{id:'recibido',icon:'📥',l:'1. Recibido'},{id:'conteo',icon:'🔢',l:'2. Conteo'},{id:'pedido',icon:'🛒',l:'3. Pedido'}];
+
+  return (
+    <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#08101e',overflow:'hidden'}}>
+
+      {/* TOAST */}
+      {toast&&<div style={{position:'fixed',top:12,left:'50%',transform:'translateX(-50%)',zIndex:9999,
+        background:toast.t==='ok'?'#14532d':toast.t==='warn'?'#78350f':'#7f1d1d',
+        color:'#fff',padding:'9px 18px',borderRadius:10,fontWeight:600,fontSize:12,
+        boxShadow:'0 4px 20px rgba(0,0,0,.5)',maxWidth:'92vw',textAlign:'center',whiteSpace:'pre-wrap'}}>
+        {toast.msg}
+      </div>}
+
+      <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleImportar} style={{display:'none'}}/>
+
+      {/* MODAL EDITAR INSUMO */}
+      {modIns&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:1000,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
+          <div style={{background:'#0d1b33',borderRadius:'14px 14px 0 0',padding:'20px 16px 32px',width:'100%',maxWidth:480,border:'1px solid #1a3050',maxHeight:'85vh',overflowY:'auto'}}>
+            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:2}}>✏️ Editar insumo</div>
+            <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginBottom:14}}>{formIns.codigo} · {formIns.nombre}</div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
+              {[['precio','Precio ($)'],['stockES','Rellenable ES'],['stockFS','Rellenable FS']].map(([k,l])=>(
+                <div key={k}>
+                  <div style={{fontSize:10,color:'#64748b',marginBottom:3}}>{l}</div>
+                  <input type="number" step="0.01" value={formIns[k]??0} onChange={e=>setFormIns(f=>({...f,[k]:e.target.value}))} style={INP}/>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'flex',gap:8,marginTop:14}}>
+              <button onClick={guardarInsumo} style={BTN('#3b82f6')}>💾 Guardar</button>
+              <button onClick={()=>setModIns(false)} style={BTN('#1e3a5f','#94a3b8')}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM CIERRE */}
+      {confCierre&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+          <div style={{background:'#0d1b33',borderRadius:13,padding:22,maxWidth:340,width:'100%',border:'1px solid #1a3050'}}>
+            <div style={{fontSize:22,marginBottom:8}}>🔒</div>
+            <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>¿Cerrar el día?</div>
+            <div style={{fontSize:12,color:'#94a3b8',marginBottom:14}}>
+              {sinConteo>0?`Faltan ${sinConteo} insumo(s) sin conteo final. `:'Todos los insumos tienen conteo. '}
+              Al cerrar se generará el pedido de mañana y el día quedará bloqueado.
+            </div>
+            <div style={{display:'flex',gap:8}}>
+              <button onClick={cerrarDia} style={BTN('#14532d','#86efac')}>✅ Cerrar día</button>
+              <button onClick={()=>setConfCierre(false)} style={BTN('#1e3a5f','#94a3b8')}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER */}
+      <div style={{background:'linear-gradient(135deg,#0a1628,#0d1f38)',borderBottom:'1px solid #1a3050',padding:'10px 14px',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:9}}>
+            <div style={{width:32,height:32,borderRadius:8,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17}}>❄️</div>
+            <div>
+              <div style={{fontWeight:800,fontSize:14,color:'#e2ecf8'}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
+              <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>PEDIDO DE PRODUCCIÓN · RUTA FRÍA</div>
+            </div>
+          </div>
+          <input type="date" value={fecha} onChange={e=>setFecha(e.target.value)}
+            style={{...INP,width:'auto',padding:'5px 8px',fontSize:11,background:'#162035'}}/>
+        </div>
+
+        {/* Estado + toggle rellenable */}
+        <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
+          <div style={TAG(cerrado?'#14532d':'#162035',cerrado?'#86efac':'#60a5fa')}>
+            {cerrado?'🔒 CERRADO':'🟢 ABIERTO'}
+          </div>
+          <div style={{fontSize:10,color:'#475569',flex:1,fontFamily:'DM Mono,monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+            {nombreDia(fecha)}
+          </div>
+          {/* Toggle ES / FS */}
+          <div style={{display:'flex',alignItems:'center',gap:6,background:'#0a1628',borderRadius:8,padding:'4px 9px',border:'1px solid #1a3050'}}>
+            <span style={{fontSize:9,fontWeight:700,color:tipo==='ES'?'#93c5fd':'#475569'}}>ES</span>
+            <label className="tog">
+              <input type="checkbox" checked={tipo==='FS'}
+                onChange={e=>setOverride(e.target.checked?'FS':'ES')}/>
+              <span className="sli"/>
+            </label>
+            <span style={{fontSize:9,fontWeight:700,color:tipo==='FS'?'#fb923c':'#475569'}}>FS</span>
+            {ovRel!==null&&(
+              <button onClick={()=>setOverride(null)}
+                style={{fontSize:9,color:'#64748b',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',marginLeft:2}}>
+                auto
+              </button>
+            )}
+          </div>
+          <div style={TAG(tipo==='FS'?'#431407':'#0c2340',tipo==='FS'?'#fb923c':'#93c5fd')}>
+            {tipo==='FS'?'🍊 FIN SEMANA':'📘 ENTRE SEMANA'}
+            {ovRel===null&&<span style={{fontSize:8,opacity:.6}}> auto</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* NAV */}
+      <div style={{background:'#0d1b33',borderBottom:'1px solid #1a3050',display:'flex',flexShrink:0}}>
+        {NAV.map(n=>(
+          <button key={n.id} onClick={()=>setVista(n.id)}
+            style={{flex:1,padding:'8px 4px',border:'none',cursor:'pointer',background:'transparent',
+              borderBottom:`2px solid ${vista===n.id?'#3b82f6':'transparent'}`,
+              color:vista===n.id?'#60a5fa':'#64748b',fontWeight:600,fontSize:10,fontFamily:'Sora,sans-serif'}}>
+            <div style={{fontSize:16}}>{n.icon}</div><div style={{marginTop:1}}>{n.l}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* CONTENIDO */}
+      <div style={{flex:1,overflowY:'auto',padding:'10px 12px 28px'}}>
+
+        {/* ══════════════ VISTA DÍA ══════════════ */}
+        {vista==='dia'&&(
+          <div className="fu">
+
+            {/* KPIs */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:10}}>
+              {[
+                [conConteo+'/'+calc.length,'Conteos','#3b82f6'],
+                [alertas.length||'—','Alertas',alertas.length?'#ef4444':'#1e3a5f'],
+                [totalPedir,'A pedir','#22c55e'],
+                [costoPedir>0?'$'+Math.round(costoPedir):'—','Costo','#f97316'],
+              ].map(([v,l,c])=>(
+                <div key={l} style={{...CARD(),padding:'8px 6px',textAlign:'center'}}>
+                  <div style={{fontWeight:800,fontSize:13,color:c,fontFamily:'DM Mono,monospace'}}>{v}</div>
+                  <div style={{fontSize:8,color:'#475569',marginTop:1}}>{l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Fases + cierre */}
+            <div style={{display:'flex',gap:5,marginBottom:8,flexWrap:'wrap'}}>
+              {FASES.map(f=>(
+                <button key={f.id} onClick={()=>setFase(f.id)}
+                  style={{...BTN(fase===f.id?'#1d4ed8':'#162035',fase===f.id?'#fff':'#64748b','6px 10px'),
+                    border:fase===f.id?'1px solid #3b82f6':'1px solid #1a3050',fontSize:11}}>
+                  {f.icon} {f.l}
+                </button>
+              ))}
+              {!cerrado&&(
+                <button onClick={()=>setConfCierre(true)}
+                  style={{...BTN('#14532d','#86efac','6px 10px'),border:'1px solid #166534',fontSize:11,marginLeft:'auto'}}>
+                  🔒 Cerrar día
+                </button>
+              )}
+            </div>
+
+            {/* Banner Excel / Import */}
+            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:10,padding:'10px 12px',marginBottom:10}}>
+              <div style={{fontWeight:700,fontSize:12,color:'#4ade80',marginBottom:4}}>📊 Importar existencias</div>
+              <div style={{fontSize:10,color:'#86efac',lineHeight:1.5,marginBottom:8}}>
+                Puedes importar <b>el Excel de Existencias Ped Produ</b> que ya usas día a día, o el que exporta RellenApp. La app detecta el formato automáticamente.
+              </div>
+              <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
+                <button onClick={handleExportar} style={BTN('#166534','#fff','7px 12px')}>📥 Exportar hoja del día</button>
+                <button onClick={()=>fileRef.current.click()} disabled={cerrado||importando}
+                  style={{...BTN(cerrado?'#162035':'#1d4ed8',cerrado?'#475569':'#fff','7px 12px'),opacity:cerrado?.5:1}}>
+                  {importando
+                    ? <span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',border:'2px solid #fff',borderTopColor:'transparent',animation:'spin .7s linear infinite'}}/>
+                    : '📤'}
+                  {importando?' Cargando...':cerrado?' (cerrado)':' Importar Excel'}
+                </button>
+              </div>
+              {importRes&&(
+                <div style={{marginTop:7,fontSize:10,fontWeight:600,color:importRes.ok?'#4ade80':'#f87171'}}>
+                  {importRes.ok
+                    ? `✅ ${importRes.n} existencias cargadas · Formato: ${importRes.fmt}`
+                    : `❌ ${importRes.error}`}
+                </div>
+              )}
+            </div>
+
+            {/* Buscador */}
+            <input value={busq} onChange={e=>setBusq(e.target.value)}
+              placeholder="🔍 Buscar por nombre o clave..." style={{...INP,marginBottom:8}}/>
+
+            {/* Lista de insumos */}
+            {filtrado.map((ins,idx)=>{
+              const bajo = ins.fin!==null && ins.fin < ins.rel*0.25;
+              const ok   = ins.fin!==null && ins.fin >= ins.rel*0.25;
+              return (
+                <div key={ins.id} className="fu"
+                  style={{...CARD(bajo?'#7f1d1d':ok?'#14532d':'#1a3050'),padding:'10px 12px',marginBottom:7,animationDelay:`${idx*.02}s`}}>
+
+                  {/* Cabecera insumo */}
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
+                    <div style={{flex:1,paddingRight:8}}>
+                      <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace',marginBottom:1}}>
+                        {ins.codigo} · {ins.unidad} · {fmt$(ins.precio)}
+                      </div>
+                      <div style={{fontWeight:600,fontSize:12,lineHeight:1.3,color:'#e2ecf8'}}>{ins.nombre}</div>
+                      <div style={{fontSize:9,fontFamily:'DM Mono,monospace',marginTop:2,color:tipo==='FS'?'#fb923c':'#93c5fd'}}>
+                        Rellenable {tipo}: <b>{ins.rel}</b>
+                        {ins.stockES!==ins.stockFS&&(
+                          <span style={{color:'#475569',marginLeft:6}}>
+                            (ES:{ins.stockES} / FS:{ins.stockFS})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{fontSize:15,flexShrink:0}}>{bajo?'⚠️':ok?'✅':'○'}</div>
+                  </div>
+
+                  {/* FASE 1: RECIBIDO */}
+                  {fase==='recibido'&&(
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,alignItems:'end'}}>
+                      <div>
+                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>INICIO DÍA</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#94a3b8'}}>{fmt2(ins.ini)}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:9,color:'#60a5fa',fontWeight:600,marginBottom:2}}>RECIBIDO HOY</div>
+                        <input type="number" min="0" step="0.5"
+                          value={reg.recibido?.[ins.id]??''}
+                          disabled={cerrado}
+                          onChange={e=>setVal('recibido',ins.id,e.target.value)}
+                          style={{...INP,fontSize:20,fontWeight:800,color:'#60a5fa',textAlign:'center',padding:'4px'}}
+                          placeholder="0"/>
+                      </div>
+                      <div>
+                        <div style={{fontSize:9,color:'#22c55e',marginBottom:2}}>DISPONIBLE</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#4ade80'}}>{fmt2(ins.disp)}</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* FASE 2: CONTEO FINAL */}
+                  {fase==='conteo'&&(
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,alignItems:'end'}}>
+                      <div>
+                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>DISPONIBLE</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:9,color:'#fb923c',fontWeight:600,marginBottom:2}}>CONTEO FINAL</div>
+                        <input type="number" min="0" step="0.5"
+                          value={reg.conteoFin?.[ins.id]??''}
+                          disabled={cerrado}
+                          onChange={e=>setVal('conteoFin',ins.id,e.target.value)}
+                          style={{...INP,fontSize:17,fontWeight:700,color:bajo?'#f87171':'#fb923c',textAlign:'center',padding:'3px'}}
+                          placeholder="—"/>
+                      </div>
+                      <div>
+                        <div style={{fontSize:9,color:'#94a3b8',marginBottom:2}}>CONSUMO</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:ins.cons>0?'#fb923c':'#475569'}}>
+                          {ins.cons!==null?fmt2(ins.cons):'—'}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:9,color:bajo?'#fca5a5':ok?'#86efac':'#475569',marginBottom:2}}>STATUS</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:11,color:bajo?'#f87171':ok?'#4ade80':'#475569'}}>
+                          {ins.fin!==null?(bajo?'↓BAJO':'✓ OK'):'—'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* FASE 3: PEDIDO */}
+                  {fase==='pedido'&&(
+                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,alignItems:'center'}}>
+                      <div>
+                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>EXISTENCIA</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:'#94a3b8'}}>{fmt2(ins.fin??ins.ini)}</div>
+                      </div>
+                      <div style={{textAlign:'center'}}>
+                        <div style={{fontSize:9,color:'#22c55e',fontWeight:600,marginBottom:2}}>PEDIR ({tipo})</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:26,color:ins.pedir>0?'#4ade80':'#1e3a5f',lineHeight:1}}>
+                          {ins.pedir}
+                        </div>
+                        <div style={{fontSize:9,color:'#475569'}}>{ins.unidad}</div>
+                      </div>
+                      <div style={{textAlign:'right'}}>
+                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>COSTO</div>
+                        <div style={{fontFamily:'DM Mono,monospace',fontSize:11,color:'#f97316'}}>
+                          {ins.precio>0 ? fmt$(ins.pedir*ins.precio) : '—'}
+                        </div>
+                        <div style={{fontSize:9,color:'#475569',marginTop:1}}>{fmt2(ins.fin??ins.ini)} → {ins.rel}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ══════════════ CATÁLOGO ══════════════ */}
+        {vista==='catalogo'&&(
+          <div className="fu">
+            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:4}}>📦 Catálogo de insumos</div>
+            <div style={{fontSize:11,color:'#475569',marginBottom:10}}>Toca un insumo para editar precio y rellenables.</div>
+            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar..." style={{...INP,marginBottom:10}}/>
+            {db.insumos
+              .filter(i=>!busq||i.nombre.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq))
+              .map(ins=>(
+              <div key={ins.id} style={{...CARD(),padding:'10px 12px',marginBottom:6,display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}
+                onClick={()=>{setFormIns({...ins});setModIns(true);}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>{ins.codigo} · {ins.unidad}</div>
+                  <div style={{fontWeight:600,fontSize:12,marginTop:1,lineHeight:1.3}}>{ins.nombre}</div>
+                  <div style={{fontSize:9,color:'#64748b',fontFamily:'DM Mono,monospace',marginTop:2}}>
+                    Precio: {fmt$(ins.precio)} · ES: {ins.stockES} · FS: {ins.stockFS}
+                  </div>
+                </div>
+                <div style={{color:'#3b82f6',fontSize:16}}>✏️</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ══════════════ HISTORIAL ══════════════ */}
+        {vista==='historial'&&(
+          <div className="fu">
+            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:12}}>📊 Historial de días</div>
+            {Object.entries(db.registros).sort(([a],[b])=>b.localeCompare(a)).map(([f,r])=>{
+              const tr = tipoRel(f, r.overrideRel??null);
+              const c  = calcDia(db.insumos, r, tr);
+              const nC = c.filter(i=>i.fin!==null).length;
+              const tP = c.reduce((s,i)=>s+i.pedir,0);
+              const tC = c.reduce((s,i)=>s+(i.cons||0),0);
+              const tCosto = c.reduce((s,i)=>s+i.pedir*i.precio,0);
+              return (
+                <div key={f} style={{...CARD(),padding:'12px',marginBottom:8,cursor:'pointer'}}
+                  onClick={()=>{setFecha(f);setVista('dia');}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <div>
+                      <div style={{fontWeight:700,fontSize:12}}>{nombreDia(f)}</div>
+                      <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:1}}>
+                        {f} · {tr==='FS'?'🍊 Fin semana':'📘 Entre semana'}
+                      </div>
+                    </div>
+                    <div style={TAG(r.cerrado?'#14532d':'#162035',r.cerrado?'#86efac':'#60a5fa')}>
+                      {r.cerrado?'🔒 Cerrado':'🟢 Abierto'}
+                    </div>
+                  </div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6}}>
+                    {[[nC+'/'+c.length,'Conteos','#3b82f6'],[tC,'Consumo','#f97316'],[tP,'A pedir','#22c55e'],[tCosto>0?'$'+Math.round(tCosto):'—','Costo ped.','#fb923c']].map(([v,l,col])=>(
+                      <div key={l} style={{background:'#08101e',borderRadius:7,padding:'6px',textAlign:'center'}}>
+                        <div style={{fontWeight:700,fontSize:11,color:col,fontFamily:'DM Mono,monospace'}}>{v}</div>
+                        <div style={{fontSize:8,color:'#475569',marginTop:1}}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            {!Object.keys(db.registros).length&&(
+              <div style={{textAlign:'center',color:'#475569',padding:40,fontSize:12}}>
+                Sin historial aún. Empieza registrando el día de hoy.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════ PEDIDO ══════════════ */}
+        {vista==='pedido'&&(
+          <div className="fu">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+              <div style={{fontWeight:700,fontSize:14,color:'#22c55e'}}>🛒 Pedido de Producción</div>
+              <button onClick={handleExportar} style={BTN('#14532d','#86efac','6px 10px')}>📥 Exportar Excel</button>
+            </div>
+            <div style={{fontSize:10,color:'#475569',marginBottom:4,fontFamily:'DM Mono,monospace'}}>
+              {nombreDia(fecha)} · {tipo==='FS'?'🍊 FIN DE SEMANA':'📘 ENTRE SEMANA'}
+            </div>
+
+            <div style={{background:tipo==='FS'?'#2c1000':'#0c1e33',border:`1px solid ${tipo==='FS'?'#c2410c':'#1d4ed8'}`,borderRadius:9,padding:'8px 12px',marginBottom:12,fontSize:11,color:tipo==='FS'?'#fb923c':'#93c5fd'}}>
+              {tipo==='FS'
+                ? '🍊 Rellenable FIN DE SEMANA — stocks más altos (viernes y sábado)'
+                : '📘 Rellenable ENTRE SEMANA — stocks estándar (lunes a jueves)'}
+              {ovRel!==null&&<span style={{marginLeft:8,fontSize:9,opacity:.6}}>(asignado manualmente)</span>}
+            </div>
+
+            {calc.filter(i=>i.pedir>0).map(ins=>(
+              <div key={ins.id} style={{...CARD(),padding:'10px 12px',marginBottom:6,display:'flex',alignItems:'center',gap:12}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>{ins.codigo}</div>
+                  <div style={{fontWeight:600,fontSize:12,lineHeight:1.3}}>{ins.nombre}</div>
+                  <div style={{fontSize:9,color:'#64748b',fontFamily:'DM Mono,monospace',marginTop:1}}>
+                    Exist: {fmt2(ins.fin??ins.ini)} → Rel: {ins.rel} · {fmt$(ins.precio)}/{ins.unidad}
+                  </div>
+                </div>
+                <div style={{textAlign:'center',minWidth:48}}>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:26,color:'#4ade80',lineHeight:1}}>{ins.pedir}</div>
+                  <div style={{fontSize:9,color:'#475569'}}>{ins.unidad}</div>
+                  <div style={{fontSize:10,color:'#f97316',fontFamily:'DM Mono,monospace'}}>
+                    {ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {calc.filter(i=>i.pedir===0).length>0&&(
+              <div style={{...CARD(),padding:'10px 12px',marginTop:8}}>
+                <div style={{fontSize:10,color:'#475569',marginBottom:6}}>✅ Stock suficiente — no pedir:</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+                  {calc.filter(i=>i.pedir===0).map(i=>(
+                    <span key={i.id} style={TAG('#0c2340','#4ade80')}>
+                      {i.nombre.replace('FG SPR ','').replace('B SPR ','').split(' ').slice(0,3).join(' ')}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Totales */}
+            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:10,padding:'14px',marginTop:10}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <div>
+                  <div style={{fontSize:10,color:'#475569',marginBottom:2}}>TOTAL PIEZAS A PEDIR</div>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:28,color:'#4ade80'}}>{totalPedir}</div>
+                </div>
+                <div>
+                  <div style={{fontSize:10,color:'#475569',marginBottom:2}}>COSTO ESTIMADO</div>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#f97316'}}>
+                    {costoPedir>0?fmt$(costoPedir):'—'}
+                  </div>
+                  <div style={{fontSize:9,color:'#475569',marginTop:1}}>
+                    {calc.filter(i=>i.pedir>0&&i.precio===0).length>0&&
+                      `* Sin precio: ${calc.filter(i=>i.pedir>0&&i.precio===0).map(i=>i.nombre.split(' ').slice(2,4).join(' ')).join(', ')}`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
