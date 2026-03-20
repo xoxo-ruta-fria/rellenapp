@@ -232,9 +232,9 @@ function exportarExcel(fecha,insumos,reg,tipo){
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 async function leerRemisionPDF(file){
-  const buffer   = await file.arrayBuffer();
-  const pdf      = await pdfjsLib.getDocument({data: buffer}).promise;
-  const lineas   = [];
+  const buffer  = await file.arrayBuffer();
+  const pdf     = await pdfjsLib.getDocument({data: buffer}).promise;
+  const lineas  = [];
 
   for(let p=1; p<=pdf.numPages; p++){
     const page    = await pdf.getPage(p);
@@ -255,42 +255,60 @@ async function leerRemisionPDF(file){
     });
   }
 
-  // Buscar filas que tengan una clave válida en col 0 y cantidad en col 2
+  // ── Detectar formato ──────────────────────────────────────
+  // Formato A — REMISIÓN: Clave | Descripción | Cantidad | Unidad | Precio | Importe | Iva | Total
+  // Formato B — PEDIDO:   Clave | Descripción | Cantidad | Unidad
+  // En ambos casos: col 0 = clave, buscamos cantidad como primer número > 0 después de col 0
+  // La diferencia es que en Remisión hay columnas de precio después de la cantidad
+  // Detectamos el formato buscando si hay columna de precio ($ o número grande)
+
   const resultado = {};
   let n = 0;
 
   lineas.forEach(fila=>{
-    // La clave es el primer token numérico
-    const claveRaw = fila[0];
-    if(!claveRaw) return;
+    if(fila.length < 2) return;
 
-    // Verificar que sea numérica (clave del insumo)
+    // Col 0 debe ser la clave numérica
+    const claveRaw = fila[0];
     const claveNum = parseInt(claveRaw);
-    if(isNaN(claveNum)||claveNum<100) return;
+    if(isNaN(claveNum) || claveNum < 100) return;
     const claveStr = String(claveNum);
 
-    // Buscar en catálogo
+    // Buscar en catálogo de insumos
     const ins = INSUMOS_BASE.find(x=>x.codigo===claveStr);
     if(!ins) return;
 
-    // La cantidad está en col 2 (índice 2)
-    // Pero a veces el PDF une celdas — buscar el primer número válido después de la descripción
+    // Buscar cantidad: primer número válido (>0, <10000) en las columnas restantes
+    // En PEDIDO está en col 2 (después de descripción)
+    // En REMISIÓN también está en col 2 pero después hay precio, importe, etc.
+    // Estrategia: buscar el primer número flotante válido que no sea un precio grande
     let cantidad = null;
     for(let i=1; i<fila.length; i++){
-      const v = parseFloat(fila[i].replace(',','.'));
-      if(!isNaN(v) && v>0 && v<10000){
+      const txt = fila[i].replace(/[$,]/g,'').trim();
+      const v   = parseFloat(txt);
+      if(!isNaN(v) && v > 0 && v < 5000){
+        // Descartar si parece precio (número muy grande para una cantidad)
+        // Las cantidades de insumos raramente superan 500 unidades
         cantidad = v;
         break;
       }
     }
-    if(cantidad===null) return;
+    if(cantidad === null) return;
 
-    // Sumar (puede venir en múltiples remisiones)
+    // Sumar — siempre acumula aunque venga de múltiples documentos
     resultado[ins.id] = (resultado[ins.id]||0) + cantidad;
     n++;
   });
 
-  return {ok: n>0, data: resultado, n, nombre: file.name};
+  // Detectar tipo de documento para mostrar en el detalle
+  const textoCompleto = lineas.flat().join(' ').toUpperCase();
+  const tipo = textoCompleto.includes('REMISIÓN') || textoCompleto.includes('REMISION')
+    ? 'Remisión'
+    : textoCompleto.includes('PEDIDO')
+    ? 'Pedido'
+    : 'Documento';
+
+  return {ok: n>0, data: resultado, n, nombre: file.name, tipo};
 }
 
 async function procesarRemisiones(files, callback){
@@ -307,7 +325,7 @@ async function procesarRemisiones(files, callback){
           acumulado[id] = (acumulado[id]||0) + cant;
         });
         totalItems += res.n;
-        detalle.push({nombre: file.name, items: res.n, data: res.data});
+        detalle.push({nombre: file.name, items: res.n, data: res.data, tipo: res.tipo||'Documento'});
       } else {
         errores.push(file.name+': sin insumos reconocidos');
       }
@@ -843,7 +861,7 @@ function App(){
                   {remisiones.map((r,i)=>(
                     <div key={i} style={{marginBottom:8,background:'#162035',borderRadius:8,padding:'8px 10px'}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-                        <div style={{fontSize:11,fontWeight:700,color:'#60a5fa'}}>{r.nombre}</div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#60a5fa'}}>{r.tipo||'Doc'} · {r.nombre}</div>
                         <div style={{fontSize:10,color:'#475569'}}>{r.fecha} · {r.items} insumos</div>
                       </div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
