@@ -359,18 +359,21 @@ function NumBtn({label,onPress,color='#1e3a5f',textColor='#e2ecf8'}){
 }
 
 // ═══════════════════════════════════════════════════════
-// COMPONENTE: CARD DE INSUMO
+// COMPONENTE: CARD DE INSUMO — 4 FASES
 // ═══════════════════════════════════════════════════════
 function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
   const bajo  = ins.fin!==null&&ins.fin<ins.rel*0.25;
   const ok    = ins.fin!==null&&ins.fin>=ins.rel*0.25;
-  const campo = fase==='recibido'?'recibido':'conteoFin';
   const val   = fase==='recibido'?(reg.recibido?.[ins.id]??0):(reg.conteoFin?.[ins.id]??0);
 
-  const cambiar = delta => {
+  const cambiar = (campo, delta) => {
     if(cerrado) return;
-    onSet(campo, ins.id, Math.max(0,(parseFloat(val)||0)+delta));
+    const actual = campo==='recibido'?(reg.recibido?.[ins.id]??0):(reg.conteoFin?.[ins.id]??0);
+    onSet(campo, ins.id, Math.max(0,(parseFloat(actual)||0)+delta));
   };
+
+  // Calcular existencia final = inicio + recibido - consumo
+  const existenciaFinal = ins.fin !== null ? ins.fin : (ins.disp - (ins.cons||0));
 
   return (
     <div style={{background:'#0d1b33',borderRadius:14,
@@ -388,65 +391,139 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
         <div style={{fontSize:22}}>{bajo?'⚠️':ok?'✅':''}</div>
       </div>
 
-      {/* Mini resumen numérico */}
-      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:12,
-        background:'#08101e',borderRadius:10,padding:'8px 6px'}}>
-        {[['INICIO',fmt2(ins.ini),'#64748b'],['DISPONIBLE',fmt2(ins.disp),'#4ade80'],['A PEDIR',ins.pedir,ins.pedir>0?'#4ade80':'#475569']].map(([l,v,c])=>(
-          <div key={l} style={{textAlign:'center'}}>
-            <div style={{fontSize:8,color:'#475569',fontWeight:600,marginBottom:2,letterSpacing:.5}}>{l}</div>
-            <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:17,color:c}}>{v}</div>
+      {/* ── FASE: EXISTENCIAS INICIO ── */}
+      {fase==='inicio'&&(
+        <div style={{background:'#08101e',borderRadius:10,padding:'12px 14px'}}>
+          <div style={{fontSize:10,fontWeight:700,color:'#94a3b8',marginBottom:8,letterSpacing:.5}}>🌅 EXISTENCIAS INICIO DEL DÍA</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div>
+              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>CANTIDAD</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:32,color:'#94a3b8',lineHeight:1}}>{fmt2(ins.ini)}</div>
+              <div style={{fontSize:10,color:'#475569',marginTop:2}}>{ins.unidad}</div>
+            </div>
+            <div>
+              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>ORIGEN</div>
+              <div style={{fontSize:11,color:'#64748b',lineHeight:1.5}}>
+                {ins.ini>0
+                  ? <span style={{color:'#4ade80'}}>✓ Conteo final de ayer</span>
+                  : <span style={{color:'#f87171'}}>Sin datos de ayer</span>}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* Control de captura (fases recibido y conteo) */}
-      {!cerrado&&(fase==='recibido'||fase==='conteo')&&(
+      {/* ── FASE: RECIBIDO ── */}
+      {fase==='recibido'&&(
         <div>
-          <div style={{fontSize:10,fontWeight:700,letterSpacing:.5,marginBottom:8,
-            color:fase==='recibido'?'#60a5fa':'#fb923c'}}>
-            {fase==='recibido'?'📥 RECIBIDO HOY':'🔢 CONTEO FINAL'}
+          <div style={{background:'#08101e',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#475569',marginBottom:2}}>INICIO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:16,color:'#94a3b8'}}>{fmt2(ins.ini)}</div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#60a5fa',marginBottom:2}}>RECIBIDO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:16,color:'#60a5fa'}}>{fmt2(ins.rec)}</div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#4ade80',marginBottom:2}}>DISPONIBLE</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:16,color:'#4ade80'}}>{fmt2(ins.disp)}</div>
+            </div>
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <NumBtn label="−" onPress={()=>cambiar(-1)} color="#1a3050"/>
-            <NumBtn label="−½" onPress={()=>cambiar(-.5)} color="#1a3050" textColor="#94a3b8"/>
-            <input type="number" inputMode="decimal" min="0" step="0.5"
-              value={val===0&&reg[campo]?.[ins.id]===undefined?'':val}
-              onChange={e=>onSet(campo,ins.id,Math.max(0,parseFloat(e.target.value)||0))}
-              style={{flex:1,height:52,borderRadius:12,
-                border:`2px solid ${fase==='recibido'?'#3b82f6':'#f97316'}`,
-                background:'#162035',color:fase==='recibido'?'#60a5fa':'#fb923c',
-                fontSize:28,fontWeight:800,textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
-              placeholder="0"/>
-            <NumBtn label="+½" onPress={()=>cambiar(.5)} color="#1e3a5f" textColor="#94a3b8"/>
-            <NumBtn label="+" onPress={()=>cambiar(1)} color={fase==='recibido'?'#1d4ed8':'#c2410c'} textColor="#fff"/>
-          </div>
-          {fase==='conteo'&&ins.cons!==null&&(
-            <div style={{marginTop:8,fontSize:11,color:'#64748b',textAlign:'center',fontFamily:'DM Mono,monospace'}}>
-              Consumo: <span style={{color:'#fb923c',fontWeight:700}}>{fmt2(ins.cons)} {ins.unidad}</span>
-              {ins.precio>0&&<span style={{color:'#475569',marginLeft:6}}>· {fmt$(ins.cons*ins.precio)}</span>}
+          {!cerrado&&(
+            <div>
+              <div style={{fontSize:10,fontWeight:700,color:'#60a5fa',marginBottom:8,letterSpacing:.5}}>📥 CAPTURAR RECIBIDO HOY</div>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <NumBtn label="−" onPress={()=>cambiar('recibido',-1)} color="#1a3050"/>
+                <NumBtn label="−½" onPress={()=>cambiar('recibido',-.5)} color="#1a3050" textColor="#94a3b8"/>
+                <input type="number" inputMode="decimal" min="0" step="0.5"
+                  value={reg.recibido?.[ins.id]??''}
+                  onChange={e=>onSet('recibido',ins.id,Math.max(0,parseFloat(e.target.value)||0))}
+                  style={{flex:1,height:52,borderRadius:12,border:'2px solid #3b82f6',
+                    background:'#162035',color:'#60a5fa',fontSize:28,fontWeight:800,
+                    textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
+                  placeholder="0"/>
+                <NumBtn label="+½" onPress={()=>cambiar('recibido',.5)} color="#1e3a5f" textColor="#94a3b8"/>
+                <NumBtn label="+" onPress={()=>cambiar('recibido',1)} color="#1d4ed8" textColor="#fff"/>
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Vista pedido */}
-      {fase==='pedido'&&(
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
-          background:'#0a1a10',borderRadius:10,padding:'10px 14px'}}>
-          <div>
-            <div style={{fontSize:9,color:'#475569',marginBottom:2}}>EXISTENCIA FINAL</div>
-            <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:'#94a3b8'}}>{fmt2(ins.fin??ins.ini)}</div>
-          </div>
-          <div style={{textAlign:'center'}}>
-            <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:34,color:ins.pedir>0?'#4ade80':'#1e3a5f',lineHeight:1}}>{ins.pedir}</div>
-            <div style={{fontSize:10,color:'#475569'}}>{ins.unidad}</div>
-          </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:9,color:'#475569',marginBottom:2}}>COSTO</div>
-            <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:13,color:'#f97316'}}>
-              {ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}
+      {/* ── FASE: CONTEO ── */}
+      {fase==='conteo'&&(
+        <div>
+          <div style={{background:'#08101e',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#475569',marginBottom:2}}>DISPONIBLE</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#fb923c',marginBottom:2}}>CONTEO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:bajo?'#f87171':'#fb923c'}}>{ins.fin!==null?fmt2(ins.fin):'—'}</div>
+            </div>
+            <div style={{textAlign:'center'}}>
+              <div style={{fontSize:8,color:'#94a3b8',marginBottom:2}}>CONSUMO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:ins.cons>0?'#fb923c':'#475569'}}>{ins.cons!==null?fmt2(ins.cons):'—'}</div>
             </div>
           </div>
+          {!cerrado&&(
+            <div>
+              <div style={{fontSize:10,fontWeight:700,color:'#fb923c',marginBottom:8,letterSpacing:.5}}>🔢 CAPTURAR CONTEO FÍSICO</div>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <NumBtn label="−" onPress={()=>cambiar('conteoFin',-1)} color="#1a3050"/>
+                <NumBtn label="−½" onPress={()=>cambiar('conteoFin',-.5)} color="#1a3050" textColor="#94a3b8"/>
+                <input type="number" inputMode="decimal" min="0" step="0.5"
+                  value={reg.conteoFin?.[ins.id]??''}
+                  onChange={e=>onSet('conteoFin',ins.id,Math.max(0,parseFloat(e.target.value)||0))}
+                  style={{flex:1,height:52,borderRadius:12,border:'2px solid #f97316',
+                    background:'#162035',color:bajo?'#f87171':'#fb923c',fontSize:28,fontWeight:800,
+                    textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
+                  placeholder="—"/>
+                <NumBtn label="+½" onPress={()=>cambiar('conteoFin',.5)} color="#1e3a5f" textColor="#94a3b8"/>
+                <NumBtn label="+" onPress={()=>cambiar('conteoFin',1)} color="#c2410c" textColor="#fff"/>
+              </div>
+              {ins.cons!==null&&(
+                <div style={{marginTop:8,fontSize:11,color:'#64748b',textAlign:'center',fontFamily:'DM Mono,monospace'}}>
+                  Consumo: <span style={{color:'#fb923c',fontWeight:700}}>{fmt2(ins.cons)} {ins.unidad}</span>
+                  {ins.precio>0&&<span style={{color:'#475569',marginLeft:6}}>· {fmt$(ins.cons*ins.precio)}</span>}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── FASE: EXISTENCIAS FINAL / CIERRE ── */}
+      {fase==='cierre'&&(
+        <div style={{background:'#0a1a10',borderRadius:10,padding:'12px 14px',border:'1px solid #166534'}}>
+          <div style={{fontSize:10,fontWeight:700,color:'#4ade80',marginBottom:10,letterSpacing:.5}}>🌙 EXISTENCIAS FINAL DEL DÍA</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
+            <div style={{textAlign:'center',background:'#08101e',borderRadius:8,padding:'10px 6px'}}>
+              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>INICIO + RECIBIDO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
+            </div>
+            <div style={{textAlign:'center',background:'#08101e',borderRadius:8,padding:'10px 6px'}}>
+              <div style={{fontSize:9,color:'#fb923c',marginBottom:3}}>CONSUMO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#fb923c'}}>{ins.cons!==null?fmt2(ins.cons):'—'}</div>
+            </div>
+          </div>
+          <div style={{textAlign:'center',background:'#0c2a18',borderRadius:10,padding:'12px',border:'1px solid #166534'}}>
+            <div style={{fontSize:10,color:'#86efac',marginBottom:4,fontWeight:600}}>EXISTENCIA FINAL → INICIO DE MAÑANA</div>
+            <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:36,
+              color:ins.fin!==null?'#4ade80':'#475569',lineHeight:1}}>
+              {ins.fin!==null?fmt2(ins.fin):'Sin conteo'}
+            </div>
+            <div style={{fontSize:10,color:'#475569',marginTop:4}}>{ins.unidad}</div>
+          </div>
+          {ins.pedir>0&&(
+            <div style={{marginTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',
+              background:'#08101e',borderRadius:8,padding:'8px 12px'}}>
+              <div style={{fontSize:11,color:'#64748b'}}>A pedir mañana ({tipo})</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:20,color:'#4ade80'}}>{ins.pedir} {ins.unidad}</div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -461,7 +538,7 @@ function App(){
   const [db,    setDb]     = React.useState(()=>local||{insumos:INSUMOS_BASE.map(i=>({...i})),registros:{}});
   const [fecha, setFecha]  = React.useState(HOY);
   const [vista, setVista]  = React.useState('dia');
-  const [fase,  setFase]   = React.useState('recibido');
+  const [fase,  setFase]   = React.useState('inicio');
   const [busq,  setBusq]   = React.useState('');
   const [toast, setToast]  = React.useState(null);
   const [modEdit,setModEdit]= React.useState(null);
@@ -497,15 +574,22 @@ function App(){
     if(configOk()) cargarDia(fecha);
   },[fecha, scriptUrl]);
 
-  // Auto-transferir conteo de ayer → inicio de hoy
+  // Auto-transferir conteo del día anterior → inicio del día activo
   React.useEffect(()=>{
-    if(fecha===HOY&&!db.registros[HOY]?.stockInicio){
-      const ra=db.registros[AYER];
-      if(ra?.conteoFin&&Object.keys(ra.conteoFin).length>0){
-        setDb(d=>({...d,registros:{...d.registros,[HOY]:{...d.registros[HOY],stockInicio:{...ra.conteoFin}}}}));
+    // Buscar el día anterior a la fecha activa
+    const fechaAnterior = new Date(fecha+'T12:00:00');
+    fechaAnterior.setDate(fechaAnterior.getDate()-1);
+    const diaAnterior = fechaAnterior.toISOString().slice(0,10);
+    const regHoy = db.registros[fecha];
+    const regAyer = db.registros[diaAnterior];
+    // Solo transferir si el día activo no tiene stock inicio aún
+    // y el día anterior tiene conteo final
+    if(!regHoy?.stockInicio || Object.keys(regHoy.stockInicio||{}).length===0){
+      if(regAyer?.conteoFin && Object.keys(regAyer.conteoFin).length>0){
+        setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],stockInicio:{...regAyer.conteoFin}}}}));
       }
     }
-  },[fecha]);
+  },[fecha, db.registros]);
 
   // ── SINCRONIZACIÓN ──────────────────────────────────
   const cargarDia = async(f) => {
@@ -563,8 +647,8 @@ function App(){
 
   const cerrarDia=()=>{
     setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],cerrado:true}}}));
-    showToast('✅ Día cerrado — pedido listo');
-    setFase('pedido'); setShowCierre(false);
+    showToast('✅ Día cerrado — existencias finales listas');
+    setFase('cierre'); setShowCierre(false);
   };
 
   const guardarEdit=()=>{
@@ -629,7 +713,7 @@ function App(){
   const totalPedir = calc.reduce((s,i)=>s+i.pedir,0);
   const costoPedir = calc.reduce((s,i)=>s+i.pedir*i.precio,0);
 
-  const FASES=[{id:'recibido',icon:'📥',l:'Recibido'},{id:'conteo',icon:'🔢',l:'Conteo'},{id:'pedido',icon:'🛒',l:'Pedido'}];
+  const FASES=[{id:'inicio',icon:'🌅',l:'Inicio'},{id:'recibido',icon:'📥',l:'Recibido'},{id:'conteo',icon:'🔢',l:'Conteo'},{id:'cierre',icon:'🌙',l:'Cierre'}];
   const NAV=[{id:'dia',icon:'📅',l:'Hoy'},{id:'pedido',icon:'🛒',l:'Pedido'},{id:'historial',icon:'📊',l:'Historial'},{id:'catalogo',icon:'⚙️',l:'Config'}];
 
   // Indicador de sync
@@ -827,16 +911,20 @@ function App(){
               ))}
             </div>
 
-            {/* Fases */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:12}}>
-              {FASES.map(f=>(
-                <button key={f.id} onClick={()=>setFase(f.id)}
-                  style={{height:50,borderRadius:12,border:`2px solid ${fase===f.id?'#3b82f6':'#1a3050'}`,
-                    background:fase===f.id?'#1d4ed8':'#0d1b33',color:fase===f.id?'#fff':'#64748b',
-                    fontSize:11,fontWeight:700,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
-                  <span style={{fontSize:16}}>{f.icon}</span><span>{f.l}</span>
-                </button>
-              ))}
+            {/* Fases — 4 pasos */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,marginBottom:12}}>
+              {FASES.map(f=>{
+                const colors = {inicio:'#64748b',recibido:'#3b82f6',conteo:'#f97316',cierre:'#22c55e'};
+                const c = colors[f.id]||'#3b82f6';
+                return (
+                  <button key={f.id} onClick={()=>setFase(f.id)}
+                    style={{height:54,borderRadius:12,border:`2px solid ${fase===f.id?c:'#1a3050'}`,
+                      background:fase===f.id?c:'#0d1b33',color:fase===f.id?'#fff':'#64748b',
+                      fontSize:10,fontWeight:700,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
+                    <span style={{fontSize:16}}>{f.icon}</span><span>{f.l}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* REMISIONES PDF */}
