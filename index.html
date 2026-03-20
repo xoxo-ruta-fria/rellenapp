@@ -743,7 +743,7 @@ function App(){
     setSyncing(true);
     try{
       const res = await apiGet('leerRegistro',{fecha:f});
-      if(res.ok && res.datos){
+      if(res.ok && res.datos && Object.keys(res.datos.stockInicio||{}).length+Object.keys(res.datos.recibido||{}).length+Object.keys(res.datos.conteoFin||{}).length > 0){
         setDb(d=>({...d,registros:{...d.registros,[f]:{...res.datos}}}));
       }
       setSyncStatus('ok');
@@ -752,14 +752,30 @@ function App(){
     }finally{ setSyncing(false); }
   };
 
+  // Normaliza cualquier formato de fecha a YYYY-MM-DD
+  const normalizarFecha = (f) => {
+    if(/^\d{4}-\d{2}-\d{2}$/.test(f)) return f; // ya está bien
+    try{
+      const d = new Date(f);
+      if(!isNaN(d)) return d.toISOString().slice(0,10);
+    }catch{}
+    return f;
+  };
+
   const cargarTodo = async() => {
     if(!configOk()){ showToast('⚠️ Configura la URL primero','warn'); return; }
     setSyncing(true);
     try{
       const res=await apiGet('leerTodos');
       if(res.ok&&res.registros){
-        setDb(d=>({...d,registros:{...d.registros,...res.registros}}));
-        showToast(`✅ ${Object.keys(res.registros).length} días sincronizados`);
+        // Normalizar claves de fecha
+        const normalized={};
+        Object.entries(res.registros).forEach(([k,v])=>{
+          const fechaNorm = normalizarFecha(k);
+          normalized[fechaNorm]=v;
+        });
+        setDb(d=>({...d,registros:{...d.registros,...normalized}}));
+        showToast(`✅ ${Object.keys(normalized).length} días sincronizados`);
         setSyncStatus('ok');
       }
     }catch(e){ showToast('❌ Error al sincronizar','err'); setSyncStatus('error'); }
