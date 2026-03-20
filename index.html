@@ -52,7 +52,18 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHOOENGxRG5EnqQH0rS
 // ═══════════════════════════════════════════════════════
 // INSUMOS BASE — XOXO RUTA FRÍA MARZO 2026
 // ═══════════════════════════════════════════════════════
-const INSUMOS_BASE = [
+// ═══════════════════════════════════════════════════════
+// CONFIGURACIÓN DE RUTAS
+// diasPedido: 0=Dom,1=Lun,2=Mar,3=Mié,4=Jue,5=Vie,6=Sáb
+// null = todos los días (Ruta Fría)
+// ═══════════════════════════════════════════════════════
+const RUTAS_CONFIG = [
+  {
+    id:'fria', nombre:'Ruta Fría', emoji:'❄️',
+    color:'#3b82f6', colorDark:'#1d4ed8',
+    diasPedido: null, // todos los días
+    descripcion:'Proteínas y salsas · Pedido diario',
+    insumos: [
   {id:3035,      codigo:"3035",       nombre:"FG SPR MOLOTE DE PLATANO BESITOS 1 PZA",    nombreCorto:"Molote Plátano",   unidad:"PZA", precio:5,     stockES:110, stockFS:150},
   {id:3027,      codigo:"3027",       nombre:"FG SPR COL DE GARNACHAS 1 KG",              nombreCorto:"Col Garnachas",    unidad:"KG",  precio:17,    stockES:3,   stockFS:4},
   {id:3017,      codigo:"3017",       nombre:"FG SPR SALSA VERDE DE CHILAQUIL 1 L",       nombreCorto:"Salsa Verde",      unidad:"LT",  precio:56,    stockES:30,  stockFS:40},
@@ -88,14 +99,135 @@ const INSUMOS_BASE = [
   {id:100003449, codigo:"100003449",  nombre:"FG SPR SALSA CAMPESINA 1 KG",              nombreCorto:"Salsa Campesina",  unidad:"KG",  precio:175,   stockES:2,   stockFS:4},
   {id:100003803, codigo:"100003803",  nombre:"FG SPR SALSA DE PESCADO 1 L",              nombreCorto:"Salsa Pescado",    unidad:"PZA", precio:0,     stockES:2,   stockFS:2},
   {id:1000002408,codigo:"1000002408", nombre:"FG ICS MANTEQUILLA GLORIA (90 G) 1 PZA",   nombreCorto:"Mantequilla",      unidad:"PZA", precio:22.67, stockES:4,   stockFS:8},
+    ]
+  },
+  {
+    id:'verduras', nombre:'Verduras', emoji:'🥦',
+    color:'#22c55e', colorDark:'#15803d',
+    diasPedido: [0,3], // Domingo y Miércoles
+    descripcion:'Frutas y verduras · Dom y Mié',
+    insumos: [
+  {id:1003,      codigo:"1003",      nombre:"B ICS AJO 1KG",                     nombreCorto:"Ajo",               unidad:"KG",    precio:0, stock:0.15},
+  {id:1010,      codigo:"1010",      nombre:"B ICS CALABAZA ITALIANA 1KG",        nombreCorto:"Calabaza Italiana", unidad:"KG",    precio:0, stock:14},
+  {id:1015,      codigo:"1015",      nombre:"B ICS CEBOLLA BLANCA 1KG",           nombreCorto:"Cebolla Blanca",    unidad:"KG",    precio:0, stock:14},
+  {id:1016,      codigo:"1016",      nombre:"B ICS CEBOLLA MORADA 1KG",           nombreCorto:"Cebolla Morada",    unidad:"KG",    precio:0, stock:8},
+  {id:1117,      codigo:"1117",      nombre:"B ICS CEBOLLA TAQUERA 1KG",          nombreCorto:"Cebolla Taquera",   unidad:"KG",    precio:0, stock:5},
+  {id:100002519, codigo:"100002519", nombre:"B ICS CILANTRO CON FLOR 1 KG",       nombreCorto:"Cilantro con Flor", unidad:"PZA",   precio:0, stock:0.5},
+  {id:1028,      codigo:"1028",      nombre:"B ICS CILANTRO 1KG",                 nombreCorto:"Cilantro",          unidad:"KG",    precio:0, stock:2},
+  {id:1030,      codigo:"1030",      nombre:"B ICS COL BLANCA 1KG",               nombreCorto:"Col Blanca",        unidad:"KG",    precio:0, stock:5},
+  {id:1036,      codigo:"1036",      nombre:"B ICS EPAZOTE 1 KG",                 nombreCorto:"Epazote",           unidad:"KG",    precio:0, stock:0.25},
+  {id:1067,      codigo:"1067",      nombre:"B ICS PEREJIL 1KG",                  nombreCorto:"Perejil",           unidad:"KG",    precio:0, stock:0.8},
+  {id:1024,      codigo:"1024",      nombre:"B ICS CHILE JALAPEÑO 1KG",           nombreCorto:"Chile Jalapeño",    unidad:"KG",    precio:0, stock:6},
+  {id:1070,      codigo:"1070",      nombre:"B ICS PIÑA 1KG",                     nombreCorto:"Piña",              unidad:"KG",    precio:0, stock:25},
+  {id:1072,      codigo:"1072",      nombre:"B ICS PLATANO MACHO 1KG",            nombreCorto:"Plátano Macho",     unidad:"KG",    precio:0, stock:18},
+  {id:1075,      codigo:"1075",      nombre:"B ICS TOMATE 1KG",                   nombreCorto:"Tomate",            unidad:"KG",    precio:0, stock:5},
+  {id:1080,      codigo:"1080",      nombre:"B ICS ZANAHORIA 1KG",                nombreCorto:"Zanahoria",         unidad:"KG",    precio:0, stock:6},
+  {id:1115,      codigo:"1115",      nombre:"B ICS AGUACATE DE SEGUNDA 1KG",      nombreCorto:"Aguacate 2da",      unidad:"KG",    precio:0, stock:30},
+  {id:100000607, codigo:"100000607", nombre:"B ICS AGUACATE DE PRIMERA 1KG",      nombreCorto:"Aguacate 1ra",      unidad:"KG",    precio:0, stock:3},
+  {id:1121,      codigo:"1121",      nombre:"B ICS CHEPICHE ROLLO 1 KG",          nombreCorto:"Chepiche",          unidad:"KG",    precio:0, stock:1},
+  {id:1123,      codigo:"1123",      nombre:"B ICS GUAJES 1KG",                   nombreCorto:"Guajes",            unidad:"KG",    precio:0, stock:1},
+  {id:1124,      codigo:"1124",      nombre:"B ICS HOJA DE PLATANO 1ROLLO",       nombreCorto:"Hoja de Plátano",   unidad:"ROLLO", precio:0, stock:3},
+  {id:1125,      codigo:"1125",      nombre:"B ICS LECHUGA ROMANA 1 PZA",         nombreCorto:"Lechuga Romana",    unidad:"PZA",   precio:0, stock:6},
+  {id:1126,      codigo:"1126",      nombre:"B ICS LIMON 1KG",                    nombreCorto:"Limón",             unidad:"KG",    precio:0, stock:30},
+  {id:1127,      codigo:"1127",      nombre:"B ICS MANZANA GALA 1 KG",            nombreCorto:"Manzana Gala",      unidad:"KG",    precio:0, stock:4},
+  {id:1128,      codigo:"1128",      nombre:"B ICS MELON 1KG",                    nombreCorto:"Melón",             unidad:"KG",    precio:0, stock:7},
+  {id:1130,      codigo:"1130",      nombre:"B ICS PAPAYA 1KG",                   nombreCorto:"Papaya",            unidad:"KG",    precio:0, stock:3},
+  {id:1132,      codigo:"1132",      nombre:"B ICS PIMIENTO VERDE 1KG",           nombreCorto:"Pimiento Verde",    unidad:"KG",    precio:0, stock:3},
+  {id:1133,      codigo:"1133",      nombre:"B ICS RABANO 1ROLLO",                nombreCorto:"Rábano",            unidad:"ROLLO", precio:0, stock:1},
+  {id:100001039, codigo:"100001039", nombre:"B ICS ROLLO DE POLEO (50 G) 1 PZA",  nombreCorto:"Poleo",             unidad:"PZA",   precio:0, stock:15},
+  {id:1134,      codigo:"1134",      nombre:"B ICS SANDIA 1KG",                   nombreCorto:"Sandía",            unidad:"KG",    precio:0, stock:5},
+    ]
+  },
+  {
+    id:'desechables', nombre:'Desechables', emoji:'📦',
+    color:'#f97316', colorDark:'#c2410c',
+    diasPedido: [1], // Lunes
+    descripcion:'Empaques y desechables · Lunes',
+    insumos: [
+  {id:1169,      codigo:"1169",      nombre:"FG ICS PALILLOS PANGUINO CAJITA 1 PZA",          nombreCorto:"Palillos",           unidad:"PZA",  precio:0, stock:1},
+  {id:100002074, codigo:"100002074", nombre:"AC ICS PAPEL ENCERADO PANCITO 1 PZA",             nombreCorto:"Papel Encerado",     unidad:"PZA",  precio:0, stock:500},
+  {id:100001163, codigo:"100001163", nombre:"AC ICS ALMEJA CANA DE AZUCAR BEIGE 9X6",          nombreCorto:"Almeja Caña Azúcar", unidad:"PZA",  precio:0, stock:7},
+  {id:100003162, codigo:"100003162", nombre:"FG ICS ALUMINIO RED TAG (1 CAJA 500) 1 PZA",      nombreCorto:"Aluminio Red Tag",   unidad:"PZA",  precio:0, stock:1},
+  {id:100001287, codigo:"100001287", nombre:"B ICS CAJA PARA TLAYUDAS ROSA DELIVERY 1 PZA",    nombreCorto:"Caja Tlayudas",      unidad:"PZA",  precio:0, stock:30},
+  {id:100000736, codigo:"100000736", nombre:"AC ICS CONTENEDOR PAPEL 16 OZ DELI",              nombreCorto:"Contenedor 16oz",    unidad:"PZA",  precio:0, stock:1},
+  {id:100000737, codigo:"100000737", nombre:"AC ICS TAPA CONTENEDOR DE PAPEL DELI 16OZ",       nombreCorto:"Tapa Contenedor 16oz",unidad:"PZA", precio:0, stock:4},
+  {id:100000735, codigo:"100000735", nombre:"AC ICS CONTENEDOR PAPEL 12 OZ DELI",              nombreCorto:"Contenedor 12oz",    unidad:"PZA",  precio:0, stock:2},
+  {id:1178,      codigo:"1178",      nombre:"AC ICS CHAROLA BIODEGRADABLE 066 REYMA",          nombreCorto:"Charola Biodeg.",    unidad:"PZA",  precio:0, stock:3},
+  {id:1180,      codigo:"1180",      nombre:"AC ICS VASO CAFE BLANCO 10 OZ (50 PZAS)",         nombreCorto:"Vaso Café 10oz",     unidad:"PZA",  precio:0, stock:2},
+  {id:1181,      codigo:"1181",      nombre:"AC ICS TAPA INIX PS TRAVEL NEGRA 10 OZ",          nombreCorto:"Tapa Travel 10oz",   unidad:"PZA",  precio:0, stock:2},
+  {id:100001150, codigo:"100001150", nombre:"AC ICS BOLSA DE PAPEL KRAFT #6",                  nombreCorto:"Bolsa Kraft #6",     unidad:"PZA",  precio:0, stock:1},
+  {id:100001165, codigo:"100001165", nombre:"AC ICS BOLSA DE PAPEL KRAFT SIN ASA 1/6",         nombreCorto:"Bolsa Kraft S/Asa",  unidad:"PZA",  precio:0, stock:3},
+  {id:100001657, codigo:"100001657", nombre:"AC ICS TAPA PLA 16 OZ PRIMO",                     nombreCorto:"Tapa PLA 16oz",      unidad:"PZA",  precio:0, stock:8},
+  {id:100000771, codigo:"100000771", nombre:"AC ICS VASO 16 OZ TRANSPARENTE REYMA",            nombreCorto:"Vaso 16oz Transp.",  unidad:"PZA",  precio:0, stock:16},
+  {id:1184,      codigo:"1184",      nombre:"AC ICS KLEENFILM 600 1ROLLO",                     nombreCorto:"Kleenfilm",          unidad:"ROLLO",precio:0, stock:5},
+  {id:100001464, codigo:"100001464", nombre:"AC ICS BOLSA NATURAL 60 X 100 COPLASUR 1 KG",     nombreCorto:"Bolsa Natural 60x100",unidad:"KG",  precio:0, stock:1},
+  {id:1190,      codigo:"1190",      nombre:"AC ICS VASO 2 OZ TRANSPARENTE PRIMO",             nombreCorto:"Vaso 2oz",           unidad:"PZA",  precio:0, stock:1},
+  {id:1292,      codigo:"1292",      nombre:"AC ICS VASO 4A OZ TRANSPARENTE REYMA",            nombreCorto:"Vaso 4oz",           unidad:"PZA",  precio:0, stock:3},
+  {id:1193,      codigo:"1193",      nombre:"AC ICS BOLSA TRANSPARENTE 25 X 35 COPLASUR",      nombreCorto:"Bolsa Transp. 25x35",unidad:"ROLLO",precio:0, stock:3},
+  {id:1195,      codigo:"1195",      nombre:"AC ICS BOLSA DE PAPEL CAFE #2",                   nombreCorto:"Bolsa Papel Café #2",unidad:"PZA",  precio:0, stock:2},
+  {id:1197,      codigo:"1197",      nombre:"AC ICS ENVASE 1/4 REYMA",                         nombreCorto:"Envase 1/4",         unidad:"PZA",  precio:0, stock:4},
+  {id:1198,      codigo:"1198",      nombre:"AC ICS TAPA 1/4 PLA TRANSPARENTE REYMA",          nombreCorto:"Tapa 1/4 PLA",       unidad:"PZA",  precio:0, stock:2},
+  {id:1306,      codigo:"1306",      nombre:"AC ICS BOLSA CAMISETA COLOR ARENA 25 X 40 BIO",   nombreCorto:"Bolsa Camiseta",     unidad:"KG",   precio:0, stock:1},
+  {id:1199,      codigo:"1199",      nombre:"AC ICS TENEDOR JUMBO PLA IMPERIAL",               nombreCorto:"Tenedor Jumbo",      unidad:"PZA",  precio:0, stock:7},
+  {id:1200,      codigo:"1200",      nombre:"AC ICS CUCHILLO JUMBO",                           nombreCorto:"Cuchillo Jumbo",     unidad:"PZA",  precio:0, stock:7},
+  {id:1201,      codigo:"1201",      nombre:"AC ICS CUCHARA SOPERA",                           nombreCorto:"Cuchara Sopera",     unidad:"PZA",  precio:0, stock:3},
+    ]
+  },
+  {
+    id:'checklist', nombre:'Checklist', emoji:'✅',
+    color:'#a855f7', colorDark:'#7e22ce',
+    diasPedido: [1], // Lunes
+    descripcion:'Insumos generales · Lunes',
+    insumos: [
+  {id:100001533, codigo:"100001533", nombre:"FG ICS FABULOSO A GRANEL 1 LT 1 PZA",             nombreCorto:"Fabuloso",           unidad:"PZA",  precio:0, stock:3},
+  {id:100000322, codigo:"100000322", nombre:"FG ICS LECHE DESLACTOSADA ALPURA 1LT",            nombreCorto:"Leche Deslactosada",  unidad:"PZA",  precio:0, stock:14},
+  {id:100000823, codigo:"100000823", nombre:"FG ICS ACEITE MIXTO PATRONA BIDON (20 LT)",       nombreCorto:"Aceite Bidón 20L",    unidad:"L",    precio:0, stock:80},
+  {id:100001926, codigo:"100001926", nombre:"FG ICS CHOCOLATE EN POLVO BOLSA 50 GR",           nombreCorto:"Chocolate Polvo",     unidad:"PZA",  precio:0, stock:45},
+  {id:1074,      codigo:"1074",      nombre:"FG ICS SAL LA FINA BOLSA 1 KG",                   nombreCorto:"Sal",                 unidad:"KG",   precio:0, stock:1},
+  {id:100003740, codigo:"100003740", nombre:"FG ICS CAFE BLASON AMERICANO GOURMET SOBRE",      nombreCorto:"Café Blasón Americano",unidad:"PZA", precio:0, stock:50},
+  {id:100003204, codigo:"100003204", nombre:"FG ICS MIX AZUCAR Y CANELA 1 PZA",               nombreCorto:"Mix Azúcar Canela",   unidad:"PZA",  precio:0, stock:50},
+  {id:100001919, codigo:"100001919", nombre:"FG SPR GRANOLA ARTESANAL CEDIS BOLSA 1 KG",       nombreCorto:"Granola Bolsa",       unidad:"KG",   precio:0, stock:5},
+  {id:1087,      codigo:"1087",      nombre:"FG ICS MAYONESA MEMBER'S MARK 3.35 KG",           nombreCorto:"Mayonesa",            unidad:"PZA",  precio:0, stock:1},
+  {id:100000391, codigo:"100000391", nombre:"FG ICS ENCENDEDOR TOKAI 1 PZA",                   nombreCorto:"Encendedor",          unidad:"PZA",  precio:0, stock:1},
+  {id:100000274, codigo:"100000274", nombre:"B ICS PAN MOLIDO SAZON 1 KG",                     nombreCorto:"Pan Molido",          unidad:"KG",   precio:0, stock:14},
+  {id:1096,      codigo:"1096",      nombre:"AC ICS CREMA PARA CAFE GLORIA SOBRE 4 GR",        nombreCorto:"Crema Café Gloria",   unidad:"KG",   precio:0, stock:0.5},
+  {id:1098,      codigo:"1098",      nombre:"AC ICS AZUCAR ESTUCHADA GLORIA SOBRE 5 GR",       nombreCorto:"Azúcar Gloria",       unidad:"KG",   precio:0, stock:0.5},
+  {id:100002362, codigo:"100002362", nombre:"FG ICS CATSUP ESTUCHADA HEINZ 1 CAJA",            nombreCorto:"Catsup Heinz",        unidad:"PZA",  precio:0, stock:1},
+  {id:1286,      codigo:"1286",      nombre:"FG ICS CAFE BLASON AR GOURMET SOBRE 180/64 GR",   nombreCorto:"Café Blasón 180",     unidad:"PZA",  precio:0, stock:45},
+  {id:1140,      codigo:"1140",      nombre:"FG ICS CLARASOL 1 LT",                            nombreCorto:"Clarasol",            unidad:"PZA",  precio:0, stock:12},
+  {id:1141,      codigo:"1141",      nombre:"FG ICS JABON ROMA 1 KG",                          nombreCorto:"Jabón Roma",          unidad:"PZA",  precio:0, stock:15},
+  {id:100000469, codigo:"100000469", nombre:"AC ICS GEL ANTIBACTERIAL A GRANEL 1 LT",          nombreCorto:"Gel Antibacterial",   unidad:"L",    precio:0, stock:2},
+  {id:1246,      codigo:"1246",      nombre:"FG ICS JABON PARA MANOS TIPO ESPUMA (MORADO)",    nombreCorto:"Jabón Espuma",        unidad:"PZA",  precio:0, stock:1},
+  {id:1146,      codigo:"1146",      nombre:"FG ICS FIBRA DE ESPONJA 1PZA",                    nombreCorto:"Fibra Esponja",       unidad:"PZA",  precio:0, stock:3},
+  {id:1148,      codigo:"1148",      nombre:"FG ICS FIBRA NEGRA SCOTCHBRITE 1 PZA",            nombreCorto:"Fibra Negra",         unidad:"PZA",  precio:0, stock:2},
+  {id:1160,      codigo:"1160",      nombre:"FG ICS TOALLA DE PAPEL TORK UNIV ROLLO 180 M",    nombreCorto:"Toalla Papel Tork",   unidad:"ROLLO",precio:0, stock:10},
+  {id:100000750, codigo:"100000750", nombre:"AC ICS SERVILLETA INTERDOBLADA TORK XPRESSNAP",   nombreCorto:"Servilleta Tork",     unidad:"PZA",  precio:0, stock:1},
+  {id:100003780, codigo:"100003780", nombre:"AC ICS SERVILLETA HOJA DOBLE FAPSA COLOR KRAFT",  nombreCorto:"Servilleta Fapsa",    unidad:"PZA",  precio:0, stock:18},
+  {id:1154,      codigo:"1154",      nombre:"FG ICS PAPEL DE BAÑO EN BOBINA TORK 1ROLLO",      nombreCorto:"Papel Baño Tork",     unidad:"ROLLO",precio:0, stock:12},
+  {id:100001389, codigo:"100001389", nombre:"AC ICS GUANTE DE NITRILO 1 PZA",                  nombreCorto:"Guante Nitrilo",      unidad:"PZA",  precio:0, stock:14},
+  {id:100003745, codigo:"100003745", nombre:"FG SPR GRANOLA ARTESANAL FRASCO 1PZA",            nombreCorto:"Granola Frasco",      unidad:"PZA",  precio:0, stock:2},
+  {id:100002265, codigo:"100002265", nombre:"AC ICS ETIQUETA ADHESIVA ROSA VASOS (5 X 9)",     nombreCorto:"Etiqueta Rosa",       unidad:"PZA",  precio:0, stock:500},
+  {id:100002264, codigo:"100002264", nombre:"AC ICS ETIQUETA ADHESIVA NEGRA DELIVERY (10 X 5)",nombreCorto:"Etiqueta Negra",      unidad:"PZA",  precio:0, stock:500},
+  {id:1162,      codigo:"1162",      nombre:"AC ICS GRAPAS 1PAQ",                              nombreCorto:"Grapas",              unidad:"PZA",  precio:0, stock:1},
+  {id:1166,      codigo:"1166",      nombre:"AC ICS ROLLOS MINIPRINTER 1 ROLLO",               nombreCorto:"Rollos Miniprinter",  unidad:"PZA",  precio:0, stock:9},
+  {id:1136,      codigo:"1136",      nombre:"FG ICS COFIA INIX 1PZA",                          nombreCorto:"Cofia",               unidad:"PZA",  precio:0, stock:70},
+    ]
+  },
 ];
+
+// Para compatibilidad: INSUMOS_BASE apunta a la ruta activa (se asigna dinámicamente)
+const INSUMOS_BASE = RUTAS_CONFIG[0].insumos;
+
 
 // ═══════════════════════════════════════════════════════
 // STORAGE LOCAL (fallback cuando no hay internet)
 // ═══════════════════════════════════════════════════════
 const SK     = 'rellenapp_xoxo_v3';
 const loadLocal = () => { try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch{return null;} };
-const saveLocal = d => { try{localStorage.setItem(SK,JSON.stringify(d));}catch{}; };
+const saveLocal = (d, rutaId) => {
+  const key = rutaId==='fria' ? 'rellenapp_xoxo_v3' : rutaId ? 'rellenapp_xoxo_'+rutaId+'_v1' : SK;
+  try{localStorage.setItem(key,JSON.stringify(d));}catch{};
+};
 
 // ═══════════════════════════════════════════════════════
 // API — Google Sheets via Apps Script
@@ -535,6 +667,9 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
 // ═══════════════════════════════════════════════════════
 function App(){
   const local  = loadLocal();
+  const [rutaId, setRutaId] = React.useState(null); // null = menú principal
+  const rutaConfig = RUTAS_CONFIG.find(r=>r.id===rutaId)||RUTAS_CONFIG[0];
+  const INSUMOS    = rutaConfig ? rutaConfig.insumos : INSUMOS_BASE;
   const [db,    setDb]     = React.useState(()=>local||{insumos:INSUMOS_BASE.map(i=>({...i})),registros:{}});
   const [fecha, setFecha]  = React.useState(HOY);
   const [vista, setVista]  = React.useState('dia');
@@ -561,7 +696,7 @@ function App(){
 
   // Guardar local cada vez que cambia db
   React.useEffect(()=>{
-    saveLocal(db);
+    saveLocal(db, rutaId);
     // Auto-sync con Sheets si hay URL configurada
     if(configOk()){
       clearTimeout(saveTimer.current);
@@ -573,6 +708,17 @@ function App(){
   React.useEffect(()=>{
     if(configOk()) cargarDia(fecha);
   },[fecha, scriptUrl]);
+
+  // Load route-specific data when ruta changes
+  React.useEffect(()=>{
+    if(!rutaId) return;
+    const key = rutaId==='fria' ? 'rellenapp_xoxo_v3' : 'rellenapp_xoxo_'+rutaId+'_v1';
+    try{
+      const s=localStorage.getItem(key);
+      if(s){ const d=JSON.parse(s); setDb(d); }
+      else { setDb({insumos:rutaConfig.insumos.map(i=>({...i})),registros:{}}); }
+    }catch{ setDb({insumos:rutaConfig.insumos.map(i=>({...i})),registros:{}}); }
+  },[rutaId]);
 
   // Auto-transferir conteo del día anterior → inicio del día activo
   React.useEffect(()=>{
@@ -633,8 +779,8 @@ function App(){
   const cerrado = !!reg.cerrado;
   const ovRel   = reg.overrideRel??null;
   const tipo    = tipoRel(fecha,ovRel);
-  const calc    = calcDia(db.insumos,reg,tipo);
-  const filtrado= calc.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq));
+  const calc    = calcDia(INSUMOS,reg,tipo);
+  const filtrado= calc.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq)||(i.nombre&&i.nombre.toLowerCase().includes(busq.toLowerCase())));
 
   const showToast=(msg,t='ok')=>{setToast({msg,t});setTimeout(()=>setToast(null),3000);};
 
@@ -722,6 +868,52 @@ function App(){
       syncing?'#f97316':syncStatus==='ok'?'#22c55e':syncStatus==='error'?'#ef4444':'#475569',
       ...(syncing?{animation:'pulse 1s ease infinite'}:{})}}/>
   );
+
+  // ── MENÚ PRINCIPAL ──────────────────────────────────
+  if(!rutaId){
+    const hoy = new Date().getDay(); // 0=Dom,1=Lun,...,6=Sáb
+    const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    return (
+      <div style={{minHeight:'100dvh',background:'#08101e',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px'}}>
+        <div style={{width:64,height:64,borderRadius:16,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,marginBottom:16}}>❄️</div>
+        <div style={{fontWeight:800,fontSize:22,color:'#e2ecf8',marginBottom:4}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
+        <div style={{fontSize:12,color:'#475569',marginBottom:32,fontFamily:'DM Mono,monospace'}}>SUCURSAL XOXO · {DIAS[hoy]} {diaCorto(HOY)}</div>
+
+        <div style={{width:'100%',maxWidth:400,display:'flex',flexDirection:'column',gap:14}}>
+          {RUTAS_CONFIG.map(ruta=>{
+            const esDiaActivo = ruta.diasPedido===null || ruta.diasPedido.includes(hoy);
+            const diasNombre  = ruta.diasPedido===null ? 'Todos los días'
+              : ruta.diasPedido.map(d=>DIAS[d]).join(' y ');
+            return (
+              <button key={ruta.id} onClick={()=>setRutaId(ruta.id)}
+                style={{width:'100%',borderRadius:16,border:`2px solid ${esDiaActivo?ruta.color:'#1a3050'}`,
+                  background:esDiaActivo?ruta.colorDark+'33':'#0d1b33',
+                  padding:'18px 20px',textAlign:'left',cursor:'pointer',
+                  display:'flex',alignItems:'center',gap:16,
+                  opacity:esDiaActivo?1:0.6}}>
+                <div style={{width:48,height:48,borderRadius:12,background:esDiaActivo?ruta.color:'#1a3050',
+                  display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>
+                  {ruta.emoji}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:800,fontSize:16,color:'#e2ecf8',marginBottom:2}}>{ruta.nombre}</div>
+                  <div style={{fontSize:11,color:'#64748b'}}>{ruta.descripcion}</div>
+                  <div style={{fontSize:10,marginTop:4,fontFamily:'DM Mono,monospace',
+                    color:esDiaActivo?ruta.color:'#475569',fontWeight:600}}>
+                    {esDiaActivo?'● Pedido hoy':'○ '+diasNombre}
+                  </div>
+                </div>
+                <div style={{fontSize:22,color:esDiaActivo?ruta.color:'#475569'}}>›</div>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{marginTop:24,fontSize:10,color:'#475569',textAlign:'center'}}>
+          Las rutas sin pedido hoy se muestran atenuadas<br/>pero puedes entrar igualmente
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#08101e',overflow:'hidden'}}>
@@ -812,10 +1004,14 @@ function App(){
       <div style={{background:'linear-gradient(180deg,#0d1f38,#0a1628)',borderBottom:'1px solid #1a3050',padding:'12px 16px 10px',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>❄️</div>
+            <button onClick={()=>setRutaId(null)}
+              style={{width:36,height:36,borderRadius:10,background:rutaConfig?rutaConfig.color:'linear-gradient(135deg,#3b82f6,#1d4ed8)',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>
+              {rutaConfig?rutaConfig.emoji:'❄️'}
+            </button>
             <div>
-              <div style={{fontWeight:800,fontSize:16,lineHeight:1}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
-              <div style={{display:'flex',alignItems:'center',gap:5,marginTop:2}}>
+              <div style={{fontWeight:800,fontSize:16,lineHeight:1}}>RellenApp <span style={{color:rutaConfig?rutaConfig.color:'#60a5fa'}}>XOXO</span></div>
+              <div style={{fontSize:10,color:'#64748b',marginBottom:1}}>{rutaConfig?.nombre||'Ruta Fría'}</div>
+              <div style={{display:'flex',alignItems:'center',gap:5}}>
                 <SyncDot/>
                 <span style={{fontSize:9,color:'#475569'}}>
                   {syncing?'Sincronizando...':syncStatus==='ok'?'Sincronizado ✓':configOk()?'Sin conexión':'Sin configurar'}
@@ -1042,7 +1238,7 @@ function App(){
             </div>
             {Object.entries(db.registros).sort(([a],[b])=>b.localeCompare(a)).map(([f,r])=>{
               const tr=tipoRel(f,r.overrideRel??null);
-              const c=calcDia(db.insumos,r,tr);
+              const c=calcDia(INSUMOS,r,tr);
               const nC=c.filter(i=>i.fin!==null).length;
               const tP=c.reduce((s,i)=>s+i.pedir,0);
               const tCosto=c.reduce((s,i)=>s+i.pedir*i.precio,0);
@@ -1094,7 +1290,7 @@ function App(){
             <div style={{fontWeight:700,fontSize:14,color:'#e2ecf8',marginBottom:8}}>📦 Insumos — editar precio y rellenables</div>
             <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar..." inputMode="search"
               style={{width:'100%',height:48,borderRadius:12,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:15,padding:'0 16px',marginBottom:12}}/>
-            {db.insumos.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq)).map(ins=>(
+            {INSUMOS.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq)).map(ins=>(
               <button key={ins.id} onClick={()=>{setFormEdit({...ins});setModEdit(ins);}}
                 style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:8,textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
                 <div style={{flex:1}}>
