@@ -3,29 +3,39 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
-<title>RellenApp XOXO ❄️</title>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>RellenApp XOXO</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Sora',sans-serif;background:#08101e;color:#e2ecf8;}
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:2px;}
-input,select{outline:none;font-family:'Sora',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#08101e;}
+body{font-family:'Sora',sans-serif;color:#e2ecf8;touch-action:manipulation;}
+::-webkit-scrollbar{display:none;}
+input,select,button{font-family:'Sora',sans-serif;-webkit-appearance:none;appearance:none;}
 select option{background:#0d1b33;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+button{cursor:pointer;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes spin{to{transform:rotate(360deg);}}
-.fu{animation:fadeUp .28s ease both;}
-.tog{position:relative;display:inline-block;width:44px;height:24px;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.fu{animation:fadeUp .25s ease both;}
+.spin{animation:spin .8s linear infinite;}
+.pulse{animation:pulse 1.5s ease infinite;}
+.tog{position:relative;display:inline-block;width:52px;height:28px;}
 .tog input{opacity:0;width:0;height:0;}
-.sli{position:absolute;cursor:pointer;inset:0;background:#1e3a5f;border-radius:24px;transition:.2s;}
-.sli:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.sli{position:absolute;cursor:pointer;inset:0;background:#1e3a5f;border-radius:28px;transition:.2s;}
+.sli:before{content:'';position:absolute;width:22px;height:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
 input:checked+.sli{background:#f97316;}
-input:checked+.sli:before{transform:translateX(20px);}
+input:checked+.sli:before{transform:translateX(24px);}
+input[type=number]{-moz-appearance:textfield;}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
 </style>
 </head>
 <body>
@@ -33,262 +43,501 @@ input:checked+.sli:before{transform:translateX(20px);}
 <script type="text/babel">
 
 // ═══════════════════════════════════════════════════════
-// INSUMOS REALES — SUCURSAL XOXO · RUTA FRÍA · MARZO 2026
-// Precios reales de la página del proveedor
-// ES = Entre Semana (Lun–Jue)  |  FS = Fin de Semana (Vie–Sáb)
+// ⚠️  CONFIGURACIÓN — PEGA AQUÍ TU URL DEL APPS SCRIPT
+// ═══════════════════════════════════════════════════════
+// Después de publicar el script en Google, pega la URL aquí:
+// Ejemplo: "https://script.google.com/macros/s/AKfy.../exec"
+const SCRIPT_URL = "";  // ← PEGA TU URL AQUÍ
+
+// ═══════════════════════════════════════════════════════
+// INSUMOS BASE — XOXO RUTA FRÍA MARZO 2026
 // ═══════════════════════════════════════════════════════
 const INSUMOS_BASE = [
-  {id:3035,      codigo:"3035",       nombre:"FG SPR MOLOTE DE PLATANO BESITOS 1 PZA",        unidad:"PZA", precio:5,      stockES:110, stockFS:150},
-  {id:3027,      codigo:"3027",       nombre:"FG SPR COL DE GARNACHAS 1 KG",                  unidad:"KG",  precio:17,     stockES:3,   stockFS:4},
-  {id:3017,      codigo:"3017",       nombre:"FG SPR SALSA VERDE DE CHILAQUIL 1 L",           unidad:"LT",  precio:56,     stockES:30,  stockFS:40},
-  {id:3011,      codigo:"3011",       nombre:"FG SPR PASTA DE FRIJOL 1 KG",                   unidad:"KG",  precio:47,     stockES:30,  stockFS:40},
-  {id:3015,      codigo:"3015",       nombre:"FG SPR MOLE COLORADITO SAZÓN 1 L",              unidad:"LT",  precio:70,     stockES:12,  stockFS:14},
-  {id:3016,      codigo:"3016",       nombre:"FG SPR SALSA DE GARNACHAS 1 L",                 unidad:"LT",  precio:54,     stockES:2,   stockFS:2},
-  {id:3042,      codigo:"3042",       nombre:"FG SPR SALSA RANCHERA 1 L",                     unidad:"LT",  precio:20,     stockES:30,  stockFS:35},
-  {id:100000466, codigo:"100000466",  nombre:"FG SPR CONCENTRADO DE JAMAICA 1 PZA",           unidad:"PZA", precio:70,     stockES:18,  stockFS:22},
-  {id:100001095, codigo:"100001095",  nombre:"FG SPR CONCENTRADO DE ARROZ 1 PZA",             unidad:"PZA", precio:81,     stockES:20,  stockFS:23},
-  {id:100001923, codigo:"100001923",  nombre:"FG SPR MEZCLA PARA HOT CAKES CEDIS BOLSA 1 KG", unidad:"KG",  precio:75,     stockES:4,   stockFS:6},
-  {id:3033,      codigo:"3033",       nombre:"FG SPR SALSA HABANERA 1 L",                     unidad:"LT",  precio:60,     stockES:10,  stockFS:12},
-  {id:3032,      codigo:"3032",       nombre:"FG SPR SALSA MORITA 1L",                        unidad:"LT",  precio:31,     stockES:10,  stockFS:12},
-  {id:100002539, codigo:"100002539",  nombre:"B SPR CHILES EN ESCABECHE 1 KG",                unidad:"KG",  precio:76,     stockES:4,   stockFS:4},
-  {id:3031,      codigo:"3031",       nombre:"FG SPR GUACACHILE 1 L",                         unidad:"LT",  precio:47,     stockES:10,  stockFS:12},
-  {id:3021,      codigo:"3021",       nombre:"FG SPR CARNE AL PASTOR 1 KG",                   unidad:"KG",  precio:113,    stockES:0,   stockFS:0},
-  {id:100000999, codigo:"100000999",  nombre:"FG SPR PECHUGA PORCIONADA 200 GR 1 PZA",        unidad:"PZA", precio:32,     stockES:70,  stockFS:90},
-  {id:100001934, codigo:"100001934",  nombre:"FG SPR CARNE DE GARNACHAS (100 GR) 1 PZA",      unidad:"PZA", precio:27,     stockES:15,  stockFS:25},
-  {id:100001933, codigo:"100001933",  nombre:"FG SPR PICADILLO DE POLLO (90 GR) 1 PZA",       unidad:"PZA", precio:17,     stockES:45,  stockFS:75},
-  {id:100001935, codigo:"100001935",  nombre:"FG SPR POLLO COCIDO (90 GR) 1 PZA",             unidad:"PZA", precio:25,     stockES:100, stockFS:145},
-  {id:100002541, codigo:"100002541",  nombre:"FG SPR FAJITAS DE POLLO (190 GR) 1 PZA",        unidad:"PZA", precio:27,     stockES:40,  stockFS:50},
-  {id:100002543, codigo:"100002543",  nombre:"FG SPR MINI HAMBURGUESA SIRLOIN (50 GR) 1PZ",   unidad:"PZA", precio:11,     stockES:20,  stockFS:30},
-  {id:100003194, codigo:"100003194",  nombre:"B SPR CHORIZO 50 GR 1 PZA",                     unidad:"PZA", precio:9,      stockES:75,  stockFS:115},
-  {id:100003208, codigo:"100003208",  nombre:"B SPR BARBACOA (90 GR) 1 PZA",                  unidad:"PZA", precio:27,     stockES:60,  stockFS:85},
-  {id:100003210, codigo:"100003210",  nombre:"B SPR CONSOME DE BARBACOA (50 GR) 1 PZA",       unidad:"PZA", precio:2,      stockES:55,  stockFS:70},
-  {id:100001798, codigo:"100001798",  nombre:"FG SPR FRIJOL DE OLLA 1 KG",                    unidad:"PZA", precio:30,     stockES:10,  stockFS:12},
-  {id:100002506, codigo:"100002506",  nombre:"FG SPR ADEREZO DULCE DE QUESOS 1 KG",           unidad:"KG",  precio:113,    stockES:1,   stockFS:1.25},
-  {id:100002505, codigo:"100002505",  nombre:"FG SPR COMPOTA DE FRUTOS ROJOS 1 KG",           unidad:"KG",  precio:196,    stockES:2,   stockFS:2},
-  {id:100002537, codigo:"100002537",  nombre:"FG SPR ATOLE DE AJONJOLI (200 ML) 1 PZA",       unidad:"PZA", precio:21,     stockES:7,   stockFS:10},
-  {id:1239,      codigo:"1239",       nombre:"B ICS QUESO DOBLE CREMA 1 KG",                  unidad:"KG",  precio:210,    stockES:3,   stockFS:4},
-  {id:100003355, codigo:"100003355",  nombre:"FG SPR CABEZA DE PUERCO 90GR 1 PZA",            unidad:"PZA", precio:20,     stockES:40,  stockFS:45},
-  {id:100003195, codigo:"100003195",  nombre:"FG ICS FILETE DE TILAPIA",                       unidad:"PZA", precio:0,      stockES:30,  stockFS:40},
-  {id:100003209, codigo:"100003209",  nombre:"SOPA DE TORTILLA BLISTER 300 ML",               unidad:"PZA", precio:21,     stockES:15,  stockFS:20},
-  {id:100003449, codigo:"100003449",  nombre:"FG SPR SALSA CAMPESINA 1 KG",                   unidad:"KG",  precio:175,    stockES:2,   stockFS:4},
-  {id:100003803, codigo:"100003803",  nombre:"FG SPR SALSA DE PESCADO 1 L",                   unidad:"PZA", precio:0,      stockES:2,   stockFS:2},
-  {id:1000002408,codigo:"1000002408", nombre:"FG ICS MANTEQUILLA GLORIA (90 G) 1 PZA",        unidad:"PZA", precio:22.67,  stockES:4,   stockFS:8},
+  {id:3035,      codigo:"3035",       nombre:"FG SPR MOLOTE DE PLATANO BESITOS 1 PZA",    nombreCorto:"Molote Plátano",   unidad:"PZA", precio:5,     stockES:110, stockFS:150},
+  {id:3027,      codigo:"3027",       nombre:"FG SPR COL DE GARNACHAS 1 KG",              nombreCorto:"Col Garnachas",    unidad:"KG",  precio:17,    stockES:3,   stockFS:4},
+  {id:3017,      codigo:"3017",       nombre:"FG SPR SALSA VERDE DE CHILAQUIL 1 L",       nombreCorto:"Salsa Verde",      unidad:"LT",  precio:56,    stockES:30,  stockFS:40},
+  {id:3011,      codigo:"3011",       nombre:"FG SPR PASTA DE FRIJOL 1 KG",               nombreCorto:"Pasta Frijol",     unidad:"KG",  precio:47,    stockES:30,  stockFS:40},
+  {id:3015,      codigo:"3015",       nombre:"FG SPR MOLE COLORADITO SAZÓN 1 L",          nombreCorto:"Mole Coloradito",  unidad:"LT",  precio:70,    stockES:12,  stockFS:14},
+  {id:3016,      codigo:"3016",       nombre:"FG SPR SALSA DE GARNACHAS 1 L",             nombreCorto:"Salsa Garnachas",  unidad:"LT",  precio:54,    stockES:2,   stockFS:2},
+  {id:3042,      codigo:"3042",       nombre:"FG SPR SALSA RANCHERA 1 L",                 nombreCorto:"Salsa Ranchera",   unidad:"LT",  precio:20,    stockES:30,  stockFS:35},
+  {id:100000466, codigo:"100000466",  nombre:"FG SPR CONCENTRADO DE JAMAICA 1 PZA",       nombreCorto:"Jamaica",          unidad:"PZA", precio:70,    stockES:18,  stockFS:22},
+  {id:100001095, codigo:"100001095",  nombre:"FG SPR CONCENTRADO DE ARROZ 1 PZA",         nombreCorto:"Arroz Conc.",      unidad:"PZA", precio:81,    stockES:20,  stockFS:23},
+  {id:100001923, codigo:"100001923",  nombre:"FG SPR MEZCLA PARA HOT CAKES CEDIS 1 KG",  nombreCorto:"Hot Cakes",        unidad:"KG",  precio:75,    stockES:4,   stockFS:6},
+  {id:3033,      codigo:"3033",       nombre:"FG SPR SALSA HABANERA 1 L",                 nombreCorto:"Salsa Habanera",   unidad:"LT",  precio:60,    stockES:10,  stockFS:12},
+  {id:3032,      codigo:"3032",       nombre:"FG SPR SALSA MORITA 1L",                    nombreCorto:"Salsa Morita",     unidad:"LT",  precio:31,    stockES:10,  stockFS:12},
+  {id:100002539, codigo:"100002539",  nombre:"B SPR CHILES EN ESCABECHE 1 KG",            nombreCorto:"Escabeche",        unidad:"KG",  precio:76,    stockES:4,   stockFS:4},
+  {id:3031,      codigo:"3031",       nombre:"FG SPR GUACACHILE 1 L",                     nombreCorto:"Guacachile",       unidad:"LT",  precio:47,    stockES:10,  stockFS:12},
+  {id:3021,      codigo:"3021",       nombre:"FG SPR CARNE AL PASTOR 1 KG",               nombreCorto:"Pastor",           unidad:"KG",  precio:113,   stockES:0,   stockFS:0},
+  {id:100000999, codigo:"100000999",  nombre:"FG SPR PECHUGA PORCIONADA 200 GR 1 PZA",   nombreCorto:"Pechuga 200g",     unidad:"PZA", precio:32,    stockES:70,  stockFS:90},
+  {id:100001934, codigo:"100001934",  nombre:"FG SPR CARNE DE GARNACHAS (100 GR) 1 PZA", nombreCorto:"Carne Garnachas",  unidad:"PZA", precio:27,    stockES:15,  stockFS:25},
+  {id:100001933, codigo:"100001933",  nombre:"FG SPR PICADILLO DE POLLO (90 GR) 1 PZA",  nombreCorto:"Picadillo",        unidad:"PZA", precio:17,    stockES:45,  stockFS:75},
+  {id:100001935, codigo:"100001935",  nombre:"FG SPR POLLO COCIDO (90 GR) 1 PZA",        nombreCorto:"Pollo Cocido",     unidad:"PZA", precio:25,    stockES:100, stockFS:145},
+  {id:100002541, codigo:"100002541",  nombre:"FG SPR FAJITAS DE POLLO (190 GR) 1 PZA",   nombreCorto:"Fajitas Pollo",    unidad:"PZA", precio:27,    stockES:40,  stockFS:50},
+  {id:100002543, codigo:"100002543",  nombre:"FG SPR MINI HAMBURGUESA SIRLOIN (50 GR)",  nombreCorto:"Mini Hamburguesa", unidad:"PZA", precio:11,    stockES:20,  stockFS:30},
+  {id:100003194, codigo:"100003194",  nombre:"B SPR CHORIZO 50 GR 1 PZA",                nombreCorto:"Chorizo",          unidad:"PZA", precio:9,     stockES:75,  stockFS:115},
+  {id:100003208, codigo:"100003208",  nombre:"B SPR BARBACOA (90 GR) 1 PZA",             nombreCorto:"Barbacoa",         unidad:"PZA", precio:27,    stockES:60,  stockFS:85},
+  {id:100003210, codigo:"100003210",  nombre:"B SPR CONSOME DE BARBACOA (50 GR) 1 PZA",  nombreCorto:"Consomé Barbacoa", unidad:"PZA", precio:2,     stockES:55,  stockFS:70},
+  {id:100001798, codigo:"100001798",  nombre:"FG SPR FRIJOL DE OLLA 1 KG",               nombreCorto:"Frijol de Olla",   unidad:"PZA", precio:30,    stockES:10,  stockFS:12},
+  {id:100002506, codigo:"100002506",  nombre:"FG SPR ADEREZO DULCE DE QUESOS 1 KG",      nombreCorto:"Aderezo Quesos",   unidad:"KG",  precio:113,   stockES:1,   stockFS:1.25},
+  {id:100002505, codigo:"100002505",  nombre:"FG SPR COMPOTA DE FRUTOS ROJOS 1 KG",      nombreCorto:"Compota",          unidad:"KG",  precio:196,   stockES:2,   stockFS:2},
+  {id:100002537, codigo:"100002537",  nombre:"FG SPR ATOLE DE AJONJOLI (200 ML) 1 PZA",  nombreCorto:"Atole Ajonjolí",   unidad:"PZA", precio:21,    stockES:7,   stockFS:10},
+  {id:1239,      codigo:"1239",       nombre:"B ICS QUESO DOBLE CREMA 1 KG",             nombreCorto:"Queso Crema",      unidad:"KG",  precio:210,   stockES:3,   stockFS:4},
+  {id:100003355, codigo:"100003355",  nombre:"FG SPR CABEZA DE PUERCO 90GR 1 PZA",       nombreCorto:"Cabeza Puerco",    unidad:"PZA", precio:20,    stockES:40,  stockFS:45},
+  {id:100003195, codigo:"100003195",  nombre:"FG ICS FILETE DE TILAPIA",                  nombreCorto:"Tilapia",          unidad:"PZA", precio:0,     stockES:30,  stockFS:40},
+  {id:100003209, codigo:"100003209",  nombre:"SOPA DE TORTILLA BLISTER 300 ML",           nombreCorto:"Sopa Tortilla",    unidad:"PZA", precio:21,    stockES:15,  stockFS:20},
+  {id:100003449, codigo:"100003449",  nombre:"FG SPR SALSA CAMPESINA 1 KG",              nombreCorto:"Salsa Campesina",  unidad:"KG",  precio:175,   stockES:2,   stockFS:4},
+  {id:100003803, codigo:"100003803",  nombre:"FG SPR SALSA DE PESCADO 1 L",              nombreCorto:"Salsa Pescado",    unidad:"PZA", precio:0,     stockES:2,   stockFS:2},
+  {id:1000002408,codigo:"1000002408", nombre:"FG ICS MANTEQUILLA GLORIA (90 G) 1 PZA",   nombreCorto:"Mantequilla",      unidad:"PZA", precio:22.67, stockES:4,   stockFS:8},
 ];
 
 // ═══════════════════════════════════════════════════════
-// STORAGE & UTILS
+// STORAGE LOCAL (fallback cuando no hay internet)
 // ═══════════════════════════════════════════════════════
-const SK = 'rellenapp_xoxo_v2';
-const loadDB = () => { try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch{return null;} };
-const saveDB = d => { try{localStorage.setItem(SK,JSON.stringify(d));}catch{}; };
+const SK     = 'rellenapp_xoxo_v3';
+const loadLocal = () => { try{const s=localStorage.getItem(SK);return s?JSON.parse(s):null;}catch{return null;} };
+const saveLocal = d => { try{localStorage.setItem(SK,JSON.stringify(d));}catch{}; };
 
-const HOY  = new Date().toISOString().slice(0,10);
-const AYER = new Date(Date.now()-86400000).toISOString().slice(0,10);
+// ═══════════════════════════════════════════════════════
+// API — Google Sheets via Apps Script
+// ═══════════════════════════════════════════════════════
+const configOk = () => SCRIPT_URL && SCRIPT_URL.startsWith('https://script.google.com');
 
-const esFDS     = f => { const d=new Date(f+'T12:00:00').getDay(); return d===5||d===6; };
-const nombreDia = f => new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-const tipoRel   = (f,ov) => ov!==null ? ov : (esFDS(f)?'FS':'ES');
-const stockRel  = (ins,tipo) => tipo==='FS' ? ins.stockFS : ins.stockES;
-const fmt$      = n => n===0?'—':'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmt2      = n => Number(n)%1===0 ? String(Number(n)) : Number(n).toFixed(2);
-
-function calcDia(insumos, reg, tipo){
-  return insumos.map(ins=>{
-    const rel  = stockRel(ins, tipo);
-    const ini  = reg?.stockInicio?.[ins.id] ?? 0;
-    const rec  = reg?.recibido?.[ins.id]    ?? 0;
-    const fin  = reg?.conteoFin?.[ins.id]   ?? null;
-    const disp = ini + rec;
-    const cons = fin!==null ? Math.max(0, disp-fin) : null;
-    const pedir= Math.max(0, rel - (fin!==null ? fin : ini));
-    return {...ins, rel, ini, rec, disp, fin, cons, pedir};
+async function apiPost(accion, body={}){
+  if(!configOk()) throw new Error('Sin configurar');
+  const res = await fetch(SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body: JSON.stringify({accion, ...body})
   });
+  return res.json();
+}
+
+async function apiGet(accion, params={}){
+  if(!configOk()) throw new Error('Sin configurar');
+  const qs = new URLSearchParams({accion,...params}).toString();
+  const res = await fetch(`${SCRIPT_URL}?${qs}`);
+  return res.json();
 }
 
 // ═══════════════════════════════════════════════════════
-// IMPORTADOR DUAL — detecta automáticamente el formato
-// Formato A: export propio RellenApp (col 0=CLAVE, col 7=EXISTENCIA FINAL)
-// Formato B: EXISTENCIAS PED PRODU (col B=clave fría, col E=existencias reales)
+// UTILS
 // ═══════════════════════════════════════════════════════
-function importarExcel(file, callback){
-  const reader = new FileReader();
-  reader.onload = e => {
+const HOY    = new Date().toISOString().slice(0,10);
+const AYER   = new Date(Date.now()-86400000).toISOString().slice(0,10);
+const esFDS  = f => { const d=new Date(f+'T12:00:00').getDay(); return d===5||d===6; };
+const diaCorto  = f => new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short'});
+const diaNombre = f => new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'2-digit',month:'long'});
+const tipoRel   = (f,ov) => ov!==null?ov:(esFDS(f)?'FS':'ES');
+const stockRel  = (ins,tipo) => tipo==='FS'?ins.stockFS:ins.stockES;
+const fmt$      = n => n===0?'—':'$'+Number(n).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:2});
+const fmt2      = n => Number(n)%1===0?String(Math.round(Number(n))):Number(n).toFixed(2);
+
+function calcDia(insumos, reg, tipo){
+  return insumos.map(ins=>{
+    const rel  = stockRel(ins,tipo);
+    const ini  = reg?.stockInicio?.[ins.id]??0;
+    const rec  = reg?.recibido?.[ins.id]??0;
+    const fin  = reg?.conteoFin?.[ins.id]??null;
+    const disp = ini+rec;
+    const cons = fin!==null?Math.max(0,disp-fin):null;
+    const pedir= Math.max(0,rel-(fin!==null?fin:ini));
+    return {...ins,rel,ini,rec,disp,fin,cons,pedir};
+  });
+}
+
+// Import Excel dual format
+function importarExcel(file,callback){
+  const reader=new FileReader();
+  reader.onload=e=>{
     try{
-      const wb   = XLSX.read(e.target.result, {type:'array'});
-      // Intentar cada hoja hasta encontrar datos reconocibles
-      let resultado = null;
-      for(const sheetName of wb.SheetNames){
-        const ws   = wb.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-        // ── Detectar formato ──
-        // Buscar fila encabezado que tenga "CLAVE" en alguna columna
-        let hiA=-1, hiB=-1;
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      let resultado=null;
+      for(const sn of wb.SheetNames){
+        const ws=wb.Sheets[sn];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        let hiA=-1,hiB=-1;
         for(let i=0;i<Math.min(data.length,15);i++){
-          const row = data[i].map(v=>String(v).trim().toUpperCase());
-          // Formato A (propio): CLAVE en col 0
-          if(row[0]==='CLAVE' && row.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'))>0){
-            hiA=i; break;
-          }
-          // Formato B (existencias produ): CLAVE en col 1 (B), EXISTENCIAS REALES en col 4 (E)
-          if(row[1]==='CLAVE' && (row[4]==='EXISTENCIAS REALES'||row[4].includes('EXISTENCIAS'))){
-            hiB=i; break;
-          }
+          const row=data[i].map(v=>String(v).trim().toUpperCase());
+          if(row[0]==='CLAVE'&&row.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'))>0){hiA=i;break;}
+          if(row[1]==='CLAVE'&&(row[4]==='EXISTENCIAS REALES'||row[4].includes('EXISTENCIAS'))){hiB=i;break;}
         }
-
-        if(hiA===-1 && hiB===-1) continue; // esta hoja no tiene el formato, probar siguiente
-
-        const res={}; let n=0;
-
+        if(hiA===-1&&hiB===-1) continue;
+        const res={};let n=0;
         if(hiA>=0){
-          // Formato A — propio RellenApp
-          const hdrs = data[hiA].map(h=>String(h).toUpperCase());
-          const cFin = hdrs.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'));
+          const hdrs=data[hiA].map(h=>String(h).toUpperCase());
+          const cFin=hdrs.findIndex(h=>h.includes('EXISTENCIA')&&h.includes('LLENAR'));
           for(let i=hiA+1;i<data.length;i++){
-            const row=data[i];
-            const claveStr=String(row[0]).trim();
-            const val=row[cFin];
-            if(!claveStr||val===''||val===null) continue;
-            const num=parseFloat(val);
-            if(isNaN(num)||num<0) continue;
-            const ins=INSUMOS_BASE.find(x=>x.codigo===claveStr);
-            if(!ins) continue;
-            res[ins.id]=num; n++;
+            const row=data[i];const cs=String(row[0]).trim();const val=row[cFin];
+            if(!cs||val===''||val===null) continue;
+            const num=parseFloat(val);if(isNaN(num)||num<0) continue;
+            const ins=INSUMOS_BASE.find(x=>x.codigo===cs);if(!ins) continue;
+            res[ins.id]=num;n++;
           }
         } else {
-          // Formato B — EXISTENCIAS PED PRODU
-          // Col B (idx 1) = clave, Col E (idx 4) = existencias reales
           for(let i=hiB+1;i<data.length;i++){
-            const row=data[i];
-            const claveRaw=row[1];
-            const val=row[4];
-            if(claveRaw===''||claveRaw===null||claveRaw===undefined) continue;
-            // Limpiar clave — viene como "3035.0" o número flotante
-            let claveStr='';
-            try{ claveStr=String(parseInt(float_parse(claveRaw))); }catch{ claveStr=String(claveRaw).replace('.0','').trim(); }
-            if(!claveStr||claveStr==='NaN'||claveStr==='undefined') continue;
-            if(val===''||val===null||val===undefined) continue;
-            const num=parseFloat(val);
-            if(isNaN(num)||num<0) continue;
-            const ins=INSUMOS_BASE.find(x=>x.codigo===claveStr);
-            if(!ins) continue;
-            res[ins.id]=num; n++;
+            const row=data[i];const cr=row[1];const val=row[4];
+            if(cr===''||cr===null) continue;
+            let cs='';try{cs=String(Math.round(parseFloat(String(cr))));}catch{cs=String(cr).replace('.0','').trim();}
+            if(!cs||cs==='NaN') continue;
+            if(val===''||val===null) continue;
+            const num=parseFloat(val);if(isNaN(num)||num<0) continue;
+            const ins=INSUMOS_BASE.find(x=>x.codigo===cs);if(!ins) continue;
+            res[ins.id]=num;n++;
           }
         }
-
-        if(n>0){
-          resultado={ok:true, data:res, n, formato:hiA>=0?'RellenApp':'Existencias Prod'};
-          break;
-        }
+        if(n>0){resultado={ok:true,data:res,n,fmt:hiA>=0?'RellenApp':'Existencias Prod'};break;}
       }
-
-      if(!resultado){
-        callback({error:'No reconocí el formato. Importa el archivo de Existencias Ped Produ o el que exportó RellenApp.'});
-        return;
-      }
+      if(!resultado){callback({error:'No reconocí el formato.'});return;}
       callback(resultado);
-    }catch(err){ callback({error:'Error leyendo archivo: '+err.message}); }
+    }catch(err){callback({error:'Error: '+err.message});}
   };
   reader.readAsArrayBuffer(file);
 }
 
-// helper para parsear claves con .0
-function float_parse(v){
-  if(typeof v==='number') return v;
-  return parseFloat(String(v));
-}
-
-// ═══════════════════════════════════════════════════════
-// EXCEL EXPORT
-// ═══════════════════════════════════════════════════════
-function exportarExcel(fecha, insumos, reg, tipo){
-  const calc = calcDia(insumos, reg, tipo);
-  const wb   = XLSX.utils.book_new();
-  const tit  = `RellenApp XOXO ❄️ · ${nombreDia(fecha)} · ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`;
-
-  const wsData = [
-    [tit,'','','','','','','',''],
+function exportarExcel(fecha,insumos,reg,tipo){
+  const calc=calcDia(insumos,reg,tipo);
+  const wb=XLSX.utils.book_new();
+  const wsData=[
+    [`RellenApp XOXO ❄️ · ${diaNombre(fecha)} · ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`,'','','','','','','',''],
     ['CLAVE','NOMBRE','U.M','RELLENABLE','INICIO DÍA','RECIBIDO','DISPONIBLE','EXISTENCIA FINAL ← LLENAR AQUÍ','PEDIR SUGERIDO'],
     ...calc.map(i=>[i.codigo,i.nombre,i.unidad,i.rel,i.ini,i.rec,i.disp,i.fin!==null?i.fin:'',i.pedir])
   ];
-
   const ws=XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols']=[{wch:12},{wch:44},{wch:5},{wch:11},{wch:11},{wch:10},{wch:11},{wch:26},{wch:14}];
+  ws['!cols']=[{wch:12},{wch:40},{wch:5},{wch:11},{wch:11},{wch:10},{wch:11},{wch:26},{wch:13}];
   ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:8}}];
-
-  const nRows=calc.length;
-  // Estilo columna amarilla filas datos
-  for(let r=2;r<=nRows+1;r++){
+  const n=calc.length;
+  for(let r=2;r<=n+1;r++){
     const ref=XLSX.utils.encode_cell({r,c:7});
-    if(!ws[ref]) ws[ref]={v:'',t:'n'};
+    if(!ws[ref])ws[ref]={v:'',t:'n'};
     ws[ref].s={fill:{patternType:'solid',fgColor:{rgb:'FFF9C4'}},font:{bold:true,sz:11,color:{rgb:'856404'}},border:{top:{style:'medium',color:{rgb:'F59E0B'}},bottom:{style:'medium',color:{rgb:'F59E0B'}},left:{style:'medium',color:{rgb:'F59E0B'}},right:{style:'medium',color:{rgb:'F59E0B'}}},alignment:{horizontal:'center'}};
   }
-  // Header fila 1
-  ['CLAVE','NOMBRE','U.M','RELLENABLE','INICIO DÍA','RECIBIDO','DISPONIBLE','EXISTENCIA FINAL ← LLENAR AQUÍ','PEDIR SUGERIDO'].forEach((_,ci)=>{
-    const ref=XLSX.utils.encode_cell({r:1,c:ci});
-    if(!ws[ref]) return;
-    ws[ref].s={fill:{patternType:'solid',fgColor:{rgb:ci===7?'F59E0B':'0F2A4A'}},font:{bold:true,color:{rgb:'FFFFFF'},sz:9},alignment:{horizontal:'center',wrapText:true}};
-  });
-  if(ws['A1']) ws['A1'].s={font:{bold:true,sz:11,color:{rgb:'0F2A4A'}},fill:{patternType:'solid',fgColor:{rgb:'D6E8FF'}}};
-
-  XLSX.utils.book_append_sheet(wb, ws, 'Conteo del Día');
-
-  // Hoja pedido con costos
+  XLSX.utils.book_append_sheet(wb,ws,'Conteo del Día');
   const pedItems=calc.filter(i=>i.pedir>0);
-  const totalCosto=pedItems.reduce((s,i)=>s+i.pedir*i.precio,0);
   const wsPed=XLSX.utils.aoa_to_sheet([
-    [`PEDIDO DE PRODUCCIÓN FRÍA — ${nombreDia(fecha)} — ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`,'','','','',''],
-    ['CLAVE','NOMBRE','U.M','EXISTENCIA','RELLENABLE','A PEDIR','PRECIO UNIT.','COSTO'],
-    ...pedItems.map(i=>[i.codigo,i.nombre,i.unidad,fmt2(i.fin??i.ini),i.rel,i.pedir,i.precio>0?i.precio:'—',i.precio>0?i.pedir*i.precio:'—']),
-    ['','','','','','TOTAL PIEZAS',pedItems.reduce((s,i)=>s+i.pedir,0),''],
-    ['','','','','','COSTO TOTAL','',totalCosto>0?totalCosto:'—'],
+    [`PEDIDO · ${diaNombre(fecha)} · ${tipo==='FS'?'FIN DE SEMANA':'ENTRE SEMANA'}`,'','','','','',''],
+    ['CLAVE','NOMBRE','U.M','EXISTENCIA','RELLENABLE','A PEDIR','COSTO'],
+    ...pedItems.map(i=>[i.codigo,i.nombre,i.unidad,fmt2(i.fin??i.ini),i.rel,i.pedir,i.precio>0?i.pedir*i.precio:'—']),
+    ['','','','','TOTAL',pedItems.reduce((s,i)=>s+i.pedir,0),pedItems.reduce((s,i)=>s+i.pedir*i.precio,0)||'—'],
   ]);
-  wsPed['!cols']=[{wch:12},{wch:44},{wch:6},{wch:11},{wch:11},{wch:10},{wch:13},{wch:13}];
-  XLSX.utils.book_append_sheet(wb, wsPed, 'Pedido Sugerido');
-
-  XLSX.writeFile(wb, `RellenApp_XOXO_${fecha}.xlsx`);
+  wsPed['!cols']=[{wch:12},{wch:40},{wch:5},{wch:11},{wch:11},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsPed,'Pedido');
+  XLSX.writeFile(wb,`RellenApp_${fecha}.xlsx`);
 }
 
 // ═══════════════════════════════════════════════════════
-// APP
+// LECTOR DE REMISIONES PDF
+// Lee columna 1 (clave) y columna 3 (cantidad)
+// Soporta múltiples PDFs — siempre suma, nunca reemplaza
+// ═══════════════════════════════════════════════════════
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+async function leerRemisionPDF(file){
+  const buffer   = await file.arrayBuffer();
+  const pdf      = await pdfjsLib.getDocument({data: buffer}).promise;
+  const lineas   = [];
+
+  for(let p=1; p<=pdf.numPages; p++){
+    const page    = await pdf.getPage(p);
+    const content = await page.getTextContent();
+
+    // Agrupar items por posición Y (misma línea = mismo Y aproximado)
+    const porY = {};
+    content.items.forEach(item=>{
+      const y = Math.round(item.transform[5]);
+      if(!porY[y]) porY[y]=[];
+      porY[y].push({x: item.transform[4], txt: item.str.trim()});
+    });
+
+    // Ordenar líneas por Y descendente (PDF origin bottom-left)
+    Object.keys(porY).sort((a,b)=>b-a).forEach(y=>{
+      const fila = porY[y].sort((a,b)=>a.x-b.x).map(i=>i.txt).filter(t=>t!=='');
+      if(fila.length>0) lineas.push(fila);
+    });
+  }
+
+  // Buscar filas que tengan una clave válida en col 0 y cantidad en col 2
+  const resultado = {};
+  let n = 0;
+
+  lineas.forEach(fila=>{
+    // La clave es el primer token numérico
+    const claveRaw = fila[0];
+    if(!claveRaw) return;
+
+    // Verificar que sea numérica (clave del insumo)
+    const claveNum = parseInt(claveRaw);
+    if(isNaN(claveNum)||claveNum<100) return;
+    const claveStr = String(claveNum);
+
+    // Buscar en catálogo
+    const ins = INSUMOS_BASE.find(x=>x.codigo===claveStr);
+    if(!ins) return;
+
+    // La cantidad está en col 2 (índice 2)
+    // Pero a veces el PDF une celdas — buscar el primer número válido después de la descripción
+    let cantidad = null;
+    for(let i=1; i<fila.length; i++){
+      const v = parseFloat(fila[i].replace(',','.'));
+      if(!isNaN(v) && v>0 && v<10000){
+        cantidad = v;
+        break;
+      }
+    }
+    if(cantidad===null) return;
+
+    // Sumar (puede venir en múltiples remisiones)
+    resultado[ins.id] = (resultado[ins.id]||0) + cantidad;
+    n++;
+  });
+
+  return {ok: n>0, data: resultado, n, nombre: file.name};
+}
+
+async function procesarRemisiones(files, callback){
+  const acumulado = {};
+  const detalle   = [];
+  let totalItems  = 0;
+  let errores     = [];
+
+  for(const file of files){
+    try{
+      const res = await leerRemisionPDF(file);
+      if(res.ok){
+        Object.entries(res.data).forEach(([id,cant])=>{
+          acumulado[id] = (acumulado[id]||0) + cant;
+        });
+        totalItems += res.n;
+        detalle.push({nombre: file.name, items: res.n, data: res.data});
+      } else {
+        errores.push(file.name+': sin insumos reconocidos');
+      }
+    }catch(e){
+      errores.push(file.name+': '+e.message);
+    }
+  }
+
+  if(Object.keys(acumulado).length===0){
+    callback({error: 'No se reconocieron insumos en los PDFs. Verifica que sean remisiones digitales.'});
+    return;
+  }
+  callback({ok:true, data:acumulado, totalItems, detalle, errores});
+}
+
+// ═══════════════════════════════════════════════════════
+// COMPONENTE: BOTÓN NUMÉRICO
+// ═══════════════════════════════════════════════════════
+function NumBtn({label,onPress,color='#1e3a5f',textColor='#e2ecf8'}){
+  return (
+    <button
+      onTouchStart={e=>e.currentTarget.style.transform='scale(.9)'}
+      onTouchEnd={e=>{e.currentTarget.style.transform='scale(1)';onPress();}}
+      onClick={onPress}
+      style={{width:52,height:52,borderRadius:12,border:`2px solid ${color}55`,background:color,
+        color:textColor,fontSize:22,fontWeight:800,display:'flex',alignItems:'center',
+        justifyContent:'center',transition:'transform .1s',flexShrink:0}}>
+      {label}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// COMPONENTE: CARD DE INSUMO
+// ═══════════════════════════════════════════════════════
+function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
+  const bajo  = ins.fin!==null&&ins.fin<ins.rel*0.25;
+  const ok    = ins.fin!==null&&ins.fin>=ins.rel*0.25;
+  const campo = fase==='recibido'?'recibido':'conteoFin';
+  const val   = fase==='recibido'?(reg.recibido?.[ins.id]??0):(reg.conteoFin?.[ins.id]??0);
+
+  const cambiar = delta => {
+    if(cerrado) return;
+    onSet(campo, ins.id, Math.max(0,(parseFloat(val)||0)+delta));
+  };
+
+  return (
+    <div style={{background:'#0d1b33',borderRadius:14,
+      border:`1.5px solid ${bajo?'#7f1d1d':ok?'#14532d':'#1a3050'}`,
+      padding:'14px',marginBottom:10}}>
+
+      {/* Cabecera */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+        <div style={{flex:1,paddingRight:8}}>
+          <div style={{fontWeight:700,fontSize:15,lineHeight:1.25}}>{ins.nombreCorto}</div>
+          <div style={{fontSize:10,color:'#475569',marginTop:3,fontFamily:'DM Mono,monospace'}}>
+            {ins.codigo} · {ins.unidad} · Rel <span style={{color:tipo==='FS'?'#fb923c':'#93c5fd',fontWeight:700}}>{ins.rel}</span>
+          </div>
+        </div>
+        <div style={{fontSize:22}}>{bajo?'⚠️':ok?'✅':''}</div>
+      </div>
+
+      {/* Mini resumen numérico */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:12,
+        background:'#08101e',borderRadius:10,padding:'8px 6px'}}>
+        {[['INICIO',fmt2(ins.ini),'#64748b'],['DISPONIBLE',fmt2(ins.disp),'#4ade80'],['A PEDIR',ins.pedir,ins.pedir>0?'#4ade80':'#475569']].map(([l,v,c])=>(
+          <div key={l} style={{textAlign:'center'}}>
+            <div style={{fontSize:8,color:'#475569',fontWeight:600,marginBottom:2,letterSpacing:.5}}>{l}</div>
+            <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:17,color:c}}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Control de captura (fases recibido y conteo) */}
+      {!cerrado&&(fase==='recibido'||fase==='conteo')&&(
+        <div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:.5,marginBottom:8,
+            color:fase==='recibido'?'#60a5fa':'#fb923c'}}>
+            {fase==='recibido'?'📥 RECIBIDO HOY':'🔢 CONTEO FINAL'}
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <NumBtn label="−" onPress={()=>cambiar(-1)} color="#1a3050"/>
+            <NumBtn label="−½" onPress={()=>cambiar(-.5)} color="#1a3050" textColor="#94a3b8"/>
+            <input type="number" inputMode="decimal" min="0" step="0.5"
+              value={val===0&&reg[campo]?.[ins.id]===undefined?'':val}
+              onChange={e=>onSet(campo,ins.id,Math.max(0,parseFloat(e.target.value)||0))}
+              style={{flex:1,height:52,borderRadius:12,
+                border:`2px solid ${fase==='recibido'?'#3b82f6':'#f97316'}`,
+                background:'#162035',color:fase==='recibido'?'#60a5fa':'#fb923c',
+                fontSize:28,fontWeight:800,textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
+              placeholder="0"/>
+            <NumBtn label="+½" onPress={()=>cambiar(.5)} color="#1e3a5f" textColor="#94a3b8"/>
+            <NumBtn label="+" onPress={()=>cambiar(1)} color={fase==='recibido'?'#1d4ed8':'#c2410c'} textColor="#fff"/>
+          </div>
+          {fase==='conteo'&&ins.cons!==null&&(
+            <div style={{marginTop:8,fontSize:11,color:'#64748b',textAlign:'center',fontFamily:'DM Mono,monospace'}}>
+              Consumo: <span style={{color:'#fb923c',fontWeight:700}}>{fmt2(ins.cons)} {ins.unidad}</span>
+              {ins.precio>0&&<span style={{color:'#475569',marginLeft:6}}>· {fmt$(ins.cons*ins.precio)}</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Vista pedido */}
+      {fase==='pedido'&&(
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',
+          background:'#0a1a10',borderRadius:10,padding:'10px 14px'}}>
+          <div>
+            <div style={{fontSize:9,color:'#475569',marginBottom:2}}>EXISTENCIA FINAL</div>
+            <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:'#94a3b8'}}>{fmt2(ins.fin??ins.ini)}</div>
+          </div>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:34,color:ins.pedir>0?'#4ade80':'#1e3a5f',lineHeight:1}}>{ins.pedir}</div>
+            <div style={{fontSize:10,color:'#475569'}}>{ins.unidad}</div>
+          </div>
+          <div style={{textAlign:'right'}}>
+            <div style={{fontSize:9,color:'#475569',marginBottom:2}}>COSTO</div>
+            <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:13,color:'#f97316'}}>
+              {ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// APP PRINCIPAL
 // ═══════════════════════════════════════════════════════
 function App(){
-  const stored=loadDB();
-  const [db,    setDb]    = React.useState(()=>stored||{insumos:INSUMOS_BASE.map(i=>({...i})),registros:{}});
-  const [fecha, setFecha] = React.useState(HOY);
-  const [vista, setVista] = React.useState('dia');
-  const [fase,  setFase]  = React.useState('recibido');
-  const [busq,  setBusq]  = React.useState('');
-  const [toast, setToast] = React.useState(null);
-  const [modIns,setModIns]= React.useState(false);
-  const [formIns,setFormIns]=React.useState({});
-  const [confCierre,setConfCierre]=React.useState(false);
+  const local  = loadLocal();
+  const [db,    setDb]     = React.useState(()=>local||{insumos:INSUMOS_BASE.map(i=>({...i})),registros:{}});
+  const [fecha, setFecha]  = React.useState(HOY);
+  const [vista, setVista]  = React.useState('dia');
+  const [fase,  setFase]   = React.useState('recibido');
+  const [busq,  setBusq]   = React.useState('');
+  const [toast, setToast]  = React.useState(null);
+  const [modEdit,setModEdit]= React.useState(null);
+  const [formEdit,setFormEdit]=React.useState({});
+  const [showCierre,setShowCierre]=React.useState(false);
   const [importando,setImportando]=React.useState(false);
   const [importRes,setImportRes]=React.useState(null);
+  const [showDatePick,setShowDatePick]=React.useState(false);
+  const [syncing,setSyncing]=React.useState(false);
+  const [syncStatus,setSyncStatus]=React.useState(null); // 'ok'|'error'|null
+  const [showConfig,setShowConfig]=React.useState(false);
+  const [scriptUrlInput,setScriptUrlInput]=React.useState(SCRIPT_URL);
+  const [scriptUrl,setScriptUrl]=React.useState(SCRIPT_URL);
   const fileRef=React.useRef();
+  const pdfRef=React.useRef();
+  const saveTimer=React.useRef(null);
+  const [procesandoPDF,setProcesandoPDF]=React.useState(false);
+  const [remisiones,setRemisiones]=React.useState([]);
+  const [showRemisiones,setShowRemisiones]=React.useState(false);
 
-  React.useEffect(()=>{ saveDB(db); },[db]);
-
-  // Auto-transferir conteo final de ayer → inicio de hoy
+  // Guardar local cada vez que cambia db
   React.useEffect(()=>{
-    if(fecha===HOY && !db.registros[HOY]?.stockInicio){
+    saveLocal(db);
+    // Auto-sync con Sheets si hay URL configurada
+    if(configOk()){
+      clearTimeout(saveTimer.current);
+      saveTimer.current=setTimeout(()=>syncDia(fecha,db.registros[fecha]||{}),1500);
+    }
+  },[db]);
+
+  // Cargar datos de Sheets al abrir y al cambiar fecha
+  React.useEffect(()=>{
+    if(configOk()) cargarDia(fecha);
+  },[fecha, scriptUrl]);
+
+  // Auto-transferir conteo de ayer → inicio de hoy
+  React.useEffect(()=>{
+    if(fecha===HOY&&!db.registros[HOY]?.stockInicio){
       const ra=db.registros[AYER];
-      if(ra?.conteoFin && Object.keys(ra.conteoFin).length>0){
+      if(ra?.conteoFin&&Object.keys(ra.conteoFin).length>0){
         setDb(d=>({...d,registros:{...d.registros,[HOY]:{...d.registros[HOY],stockInicio:{...ra.conteoFin}}}}));
       }
     }
-  },[]);
+  },[fecha]);
 
+  // ── SINCRONIZACIÓN ──────────────────────────────────
+  const cargarDia = async(f) => {
+    if(!configOk()) return;
+    setSyncing(true);
+    try{
+      const res = await apiGet('leerRegistro',{fecha:f});
+      if(res.ok && res.datos){
+        setDb(d=>({...d,registros:{...d.registros,[f]:{...res.datos}}}));
+      }
+      setSyncStatus('ok');
+    }catch(e){
+      setSyncStatus('error');
+    }finally{ setSyncing(false); }
+  };
+
+  const cargarTodo = async() => {
+    if(!configOk()){ showToast('⚠️ Configura la URL primero','warn'); return; }
+    setSyncing(true);
+    try{
+      const res=await apiGet('leerTodos');
+      if(res.ok&&res.registros){
+        setDb(d=>({...d,registros:{...d.registros,...res.registros}}));
+        showToast(`✅ ${Object.keys(res.registros).length} días sincronizados`);
+        setSyncStatus('ok');
+      }
+    }catch(e){ showToast('❌ Error al sincronizar','err'); setSyncStatus('error'); }
+    finally{ setSyncing(false); }
+  };
+
+  const syncDia = async(f, regData) => {
+    if(!configOk()) return;
+    try{
+      await apiPost('guardarRegistro',{fecha:f, datos:regData});
+      setSyncStatus('ok');
+    }catch(e){ setSyncStatus('error'); }
+  };
+
+  // ── STATE HELPERS ────────────────────────────────────
   const reg     = db.registros[fecha]||{};
   const cerrado = !!reg.cerrado;
   const ovRel   = reg.overrideRel??null;
-  const tipo    = tipoRel(fecha, ovRel);
-  const calc    = calcDia(db.insumos, reg, tipo);
-  const filtrado= calc.filter(i=>!busq||i.nombre.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq));
+  const tipo    = tipoRel(fecha,ovRel);
+  const calc    = calcDia(db.insumos,reg,tipo);
+  const filtrado= calc.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq));
 
-  const showToast=(msg,t='ok')=>{setToast({msg,t});setTimeout(()=>setToast(null),3200);};
+  const showToast=(msg,t='ok')=>{setToast({msg,t});setTimeout(()=>setToast(null),3000);};
 
   const setVal=(campo,id,v)=>{
-    const val=v===''?0:Math.max(0,Number(v));
+    const val=Math.max(0,Number(v));
     setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],[campo]:{...(d.registros[fecha]?.[campo]||{}),[id]:val}}}}));
   };
 
@@ -296,479 +545,463 @@ function App(){
 
   const cerrarDia=()=>{
     setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],cerrado:true}}}));
-    showToast('✅ Día cerrado — pedido generado');
-    setFase('pedido'); setConfCierre(false);
+    showToast('✅ Día cerrado — pedido listo');
+    setFase('pedido'); setShowCierre(false);
   };
 
-  const guardarInsumo=()=>{
-    if(!formIns.id) return;
-    setDb(d=>({...d,insumos:d.insumos.map(i=>i.id===formIns.id?{...formIns,stockES:+formIns.stockES,stockFS:+formIns.stockFS,precio:+formIns.precio}:i)}));
-    showToast('✅ Actualizado'); setModIns(false);
+  const guardarEdit=()=>{
+    if(!formEdit.id) return;
+    const insumos=db.insumos.map(i=>i.id===formEdit.id?{...formEdit,stockES:+formEdit.stockES,stockFS:+formEdit.stockFS,precio:+formEdit.precio}:i);
+    setDb(d=>({...d,insumos}));
+    if(configOk()) apiPost('guardarInsumos',{insumos}).catch(()=>{});
+    showToast('✅ Guardado'); setModEdit(null);
   };
 
-  const handleExportar=()=>{
-    exportarExcel(fecha, db.insumos, reg, tipo);
-    showToast('📥 Excel descargado — llena col amarilla e importa');
-  };
+  const handleExportar=()=>{ exportarExcel(fecha,db.insumos,reg,tipo); showToast('📥 Excel descargado'); };
 
   const handleImportar=e=>{
     const f=e.target.files[0]; if(!f) return;
     setImportando(true); setImportRes(null);
-    importarExcel(f, result=>{
+    importarExcel(f,result=>{
       setImportando(false);
-      if(result.error){ setImportRes({error:result.error}); showToast('❌ '+result.error,'err'); return; }
+      if(result.error){setImportRes({error:result.error});showToast('❌ '+result.error,'err');return;}
       setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],conteoFin:{...(d.registros[fecha]?.conteoFin||{}),...result.data}}}}));
-      setImportRes({ok:true,n:result.n,fmt:result.formato});
-      showToast(`✅ ${result.n} existencias importadas (${result.formato})`);
+      setImportRes({ok:true,n:result.n});
+      showToast(`✅ ${result.n} existencias cargadas`);
       setFase('conteo');
     });
     e.target.value='';
   };
 
+  const handlePDF=async e=>{
+    const files=[...e.target.files]; if(!files.length) return;
+    setProcesandoPDF(true);
+    await procesarRemisiones(files, result=>{
+      setProcesandoPDF(false);
+      if(result.error){showToast('❌ '+result.error,'err');return;}
+      // Sumar a recibido existente
+      setDb(d=>{
+        const regActual=d.registros[fecha]||{};
+        const recActual=regActual.recibido||{};
+        const nuevoRec={...recActual};
+        Object.entries(result.data).forEach(([id,cant])=>{
+          nuevoRec[id]=(nuevoRec[id]||0)+cant;
+        });
+        return {...d,registros:{...d.registros,[fecha]:{...regActual,recibido:nuevoRec}}};
+      });
+      // Guardar detalle de remisiones
+      setRemisiones(prev=>[...prev,...result.detalle.map(d=>({...d,fecha:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}))]);
+      showToast(`✅ ${files.length} remisión(es) · ${result.totalItems} insumos sumados`);
+      setFase('recibido');
+    });
+    e.target.value='';
+  };
+
+  const guardarScriptUrl=()=>{
+    setScriptUrl(scriptUrlInput);
+    showToast('✅ URL guardada — probando conexión...');
+    setShowConfig(false);
+    setTimeout(()=>cargarDia(fecha),500);
+  };
+
   // KPIs
   const conConteo  = calc.filter(i=>i.fin!==null).length;
-  const sinConteo  = calc.length - conConteo;
-  const alertas    = calc.filter(i=>i.fin!==null && i.fin<i.rel*0.25);
+  const sinConteo  = calc.length-conConteo;
+  const alertas    = calc.filter(i=>i.fin!==null&&i.fin<i.rel*0.25).length;
   const totalPedir = calc.reduce((s,i)=>s+i.pedir,0);
   const costoPedir = calc.reduce((s,i)=>s+i.pedir*i.precio,0);
 
-  // Estilos base
-  const INP={width:'100%',padding:'8px 10px',borderRadius:7,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:13,fontFamily:'DM Mono,monospace'};
-  const BTN=(bg,col='#fff',p='8px 14px')=>({padding:p,borderRadius:8,border:'none',cursor:'pointer',fontWeight:700,fontSize:12,background:bg,color:col,fontFamily:'Sora,sans-serif',whiteSpace:'nowrap'});
-  const CARD=(bc='#1a3050')=>({background:'#0d1b33',borderRadius:11,border:`1px solid ${bc}`});
-  const TAG=(bg,col)=>({padding:'2px 7px',borderRadius:16,fontSize:10,fontWeight:700,background:bg,color:col,display:'inline-block'});
+  const FASES=[{id:'recibido',icon:'📥',l:'Recibido'},{id:'conteo',icon:'🔢',l:'Conteo'},{id:'pedido',icon:'🛒',l:'Pedido'}];
+  const NAV=[{id:'dia',icon:'📅',l:'Hoy'},{id:'pedido',icon:'🛒',l:'Pedido'},{id:'historial',icon:'📊',l:'Historial'},{id:'catalogo',icon:'⚙️',l:'Config'}];
 
-  const NAV =[{id:'dia',icon:'📅',l:'Hoy'},{id:'catalogo',icon:'📦',l:'Catálogo'},{id:'historial',icon:'📊',l:'Historial'},{id:'pedido',icon:'🛒',l:'Pedido'}];
-  const FASES=[{id:'recibido',icon:'📥',l:'1. Recibido'},{id:'conteo',icon:'🔢',l:'2. Conteo'},{id:'pedido',icon:'🛒',l:'3. Pedido'}];
+  // Indicador de sync
+  const SyncDot = () => (
+    <div style={{width:8,height:8,borderRadius:'50%',background:
+      syncing?'#f97316':syncStatus==='ok'?'#22c55e':syncStatus==='error'?'#ef4444':'#475569',
+      ...(syncing?{animation:'pulse 1s ease infinite'}:{})}}/>
+  );
 
   return (
     <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#08101e',overflow:'hidden'}}>
 
       {/* TOAST */}
-      {toast&&<div style={{position:'fixed',top:12,left:'50%',transform:'translateX(-50%)',zIndex:9999,
+      {toast&&<div style={{position:'fixed',top:16,left:'50%',transform:'translateX(-50%)',zIndex:9999,
         background:toast.t==='ok'?'#14532d':toast.t==='warn'?'#78350f':'#7f1d1d',
-        color:'#fff',padding:'9px 18px',borderRadius:10,fontWeight:600,fontSize:12,
-        boxShadow:'0 4px 20px rgba(0,0,0,.5)',maxWidth:'92vw',textAlign:'center',whiteSpace:'pre-wrap'}}>
+        color:'#fff',padding:'12px 22px',borderRadius:14,fontWeight:700,fontSize:14,
+        boxShadow:'0 6px 28px rgba(0,0,0,.6)',maxWidth:'88vw',textAlign:'center'}}>
         {toast.msg}
       </div>}
 
       <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleImportar} style={{display:'none'}}/>
+      <input ref={pdfRef} type="file" accept=".pdf" multiple onChange={handlePDF} style={{display:'none'}}/>
 
       {/* MODAL EDITAR INSUMO */}
-      {modIns&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:1000,display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
-          <div style={{background:'#0d1b33',borderRadius:'14px 14px 0 0',padding:'20px 16px 32px',width:'100%',maxWidth:480,border:'1px solid #1a3050',maxHeight:'85vh',overflowY:'auto'}}>
-            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:2}}>✏️ Editar insumo</div>
-            <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginBottom:14}}>{formIns.codigo} · {formIns.nombre}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:10}}>
-              {[['precio','Precio ($)'],['stockES','Rellenable ES'],['stockFS','Rellenable FS']].map(([k,l])=>(
-                <div key={k}>
-                  <div style={{fontSize:10,color:'#64748b',marginBottom:3}}>{l}</div>
-                  <input type="number" step="0.01" value={formIns[k]??0} onChange={e=>setFormIns(f=>({...f,[k]:e.target.value}))} style={INP}/>
-                </div>
-              ))}
-            </div>
-            <div style={{display:'flex',gap:8,marginTop:14}}>
-              <button onClick={guardarInsumo} style={BTN('#3b82f6')}>💾 Guardar</button>
-              <button onClick={()=>setModIns(false)} style={BTN('#1e3a5f','#94a3b8')}>Cancelar</button>
+      {modEdit&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:1000,display:'flex',alignItems:'flex-end'}}>
+          <div style={{background:'#0d1b33',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',
+            width:'100%',border:'1px solid #1a3050',maxHeight:'80vh',overflowY:'auto'}}>
+            <div style={{fontWeight:800,fontSize:16,color:'#60a5fa',marginBottom:2}}>✏️ Editar insumo</div>
+            <div style={{fontSize:11,color:'#475569',marginBottom:20,fontFamily:'DM Mono,monospace'}}>{formEdit.codigo} · {formEdit.nombre}</div>
+            {[['precio','Precio unitario ($)'],['stockES','Rellenable Entre Semana'],['stockFS','Rellenable Fin de Semana']].map(([k,l])=>(
+              <div key={k} style={{marginBottom:16}}>
+                <div style={{fontSize:12,color:'#64748b',marginBottom:6,fontWeight:600}}>{l}</div>
+                <input type="number" inputMode="decimal" step="0.01" value={formEdit[k]??0}
+                  onChange={e=>setFormEdit(f=>({...f,[k]:e.target.value}))}
+                  style={{width:'100%',height:56,borderRadius:12,border:'2px solid #1e3a5f',
+                    background:'#162035',color:'#e2ecf8',fontSize:24,fontWeight:700,
+                    textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}/>
+              </div>
+            ))}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginTop:8}}>
+              <button onClick={guardarEdit} style={{height:54,borderRadius:14,border:'none',background:'#3b82f6',color:'#fff',fontSize:16,fontWeight:800}}>💾 Guardar</button>
+              <button onClick={()=>setModEdit(null)} style={{height:54,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:16,fontWeight:700}}>Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* CONFIRM CIERRE */}
-      {confCierre&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.8)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-          <div style={{background:'#0d1b33',borderRadius:13,padding:22,maxWidth:340,width:'100%',border:'1px solid #1a3050'}}>
-            <div style={{fontSize:22,marginBottom:8}}>🔒</div>
-            <div style={{fontWeight:700,fontSize:14,marginBottom:6}}>¿Cerrar el día?</div>
-            <div style={{fontSize:12,color:'#94a3b8',marginBottom:14}}>
-              {sinConteo>0?`Faltan ${sinConteo} insumo(s) sin conteo final. `:'Todos los insumos tienen conteo. '}
-              Al cerrar se generará el pedido de mañana y el día quedará bloqueado.
+      {/* MODAL CERRAR DÍA */}
+      {showCierre&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+          <div style={{background:'#0d1b33',borderRadius:20,padding:24,width:'100%',maxWidth:360,border:'1px solid #1a3050'}}>
+            <div style={{fontSize:36,marginBottom:12,textAlign:'center'}}>🔒</div>
+            <div style={{fontWeight:800,fontSize:18,marginBottom:8,textAlign:'center'}}>¿Cerrar el día?</div>
+            <div style={{fontSize:13,color:'#94a3b8',marginBottom:24,textAlign:'center',lineHeight:1.6}}>
+              {sinConteo>0?`Faltan ${sinConteo} insumo(s) sin conteo. `:'Todos los insumos tienen conteo. '}
+              Al cerrar se genera el pedido de mañana y el día queda bloqueado.
             </div>
-            <div style={{display:'flex',gap:8}}>
-              <button onClick={cerrarDia} style={BTN('#14532d','#86efac')}>✅ Cerrar día</button>
-              <button onClick={()=>setConfCierre(false)} style={BTN('#1e3a5f','#94a3b8')}>Cancelar</button>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <button onClick={cerrarDia} style={{height:56,borderRadius:14,border:'none',background:'#14532d',color:'#86efac',fontSize:16,fontWeight:800}}>✅ Cerrar</button>
+              <button onClick={()=>setShowCierre(false)} style={{height:56,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:16,fontWeight:700}}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIGURAR URL */}
+      {showConfig&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',zIndex:1000,display:'flex',alignItems:'flex-end'}}>
+          <div style={{background:'#0d1b33',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',width:'100%',border:'1px solid #1a3050'}}>
+            <div style={{fontWeight:800,fontSize:16,color:'#60a5fa',marginBottom:8}}>🔗 Conectar con Google Sheets</div>
+            <div style={{fontSize:12,color:'#94a3b8',lineHeight:1.6,marginBottom:20}}>
+              Pega aquí la URL de tu Google Apps Script para que los datos se guarden en la nube y puedas acceder desde cualquier dispositivo.
+            </div>
+            <div style={{fontSize:11,color:'#64748b',marginBottom:6,fontWeight:600}}>URL DEL APPS SCRIPT</div>
+            <input value={scriptUrlInput} onChange={e=>setScriptUrlInput(e.target.value)}
+              placeholder="https://script.google.com/macros/s/.../exec"
+              style={{width:'100%',height:52,borderRadius:12,border:'2px solid #1e3a5f',
+                background:'#162035',color:'#e2ecf8',fontSize:13,padding:'0 14px',marginBottom:20,
+                fontFamily:'DM Mono,monospace'}}/>
+            <div style={{background:'#08101e',borderRadius:12,padding:'12px 14px',marginBottom:20,border:'1px solid #1a3050'}}>
+              <div style={{fontWeight:700,fontSize:12,color:'#fbbf24',marginBottom:6}}>📋 Pasos para obtener tu URL:</div>
+              {['1. Abre tu Google Sheet','2. Ve a Extensiones → Apps Script','3. Pega el código del archivo RellenApp_Script.gs','4. Haz clic en Implementar → Nueva implementación','5. Tipo: "Aplicación web" · Acceso: "Cualquier persona"','6. Copia la URL que aparece y pégala aquí'].map((s,i)=>(
+                <div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:4}}>{s}</div>
+              ))}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+              <button onClick={guardarScriptUrl} style={{height:54,borderRadius:14,border:'none',background:'#3b82f6',color:'#fff',fontSize:15,fontWeight:800}}>💾 Guardar URL</button>
+              <button onClick={()=>setShowConfig(false)} style={{height:54,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:15,fontWeight:700}}>Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
       {/* HEADER */}
-      <div style={{background:'linear-gradient(135deg,#0a1628,#0d1f38)',borderBottom:'1px solid #1a3050',padding:'10px 14px',flexShrink:0}}>
+      <div style={{background:'linear-gradient(180deg,#0d1f38,#0a1628)',borderBottom:'1px solid #1a3050',padding:'12px 16px 10px',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-          <div style={{display:'flex',alignItems:'center',gap:9}}>
-            <div style={{width:32,height:32,borderRadius:8,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:17}}>❄️</div>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:36,height:36,borderRadius:10,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>❄️</div>
             <div>
-              <div style={{fontWeight:800,fontSize:14,color:'#e2ecf8'}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
-              <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>PEDIDO DE PRODUCCIÓN · RUTA FRÍA</div>
+              <div style={{fontWeight:800,fontSize:16,lineHeight:1}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
+              <div style={{display:'flex',alignItems:'center',gap:5,marginTop:2}}>
+                <SyncDot/>
+                <span style={{fontSize:9,color:'#475569'}}>
+                  {syncing?'Sincronizando...':syncStatus==='ok'?'Sincronizado ✓':configOk()?'Sin conexión':'Sin configurar'}
+                </span>
+              </div>
             </div>
           </div>
-          <input type="date" value={fecha} onChange={e=>setFecha(e.target.value)}
-            style={{...INP,width:'auto',padding:'5px 8px',fontSize:11,background:'#162035'}}/>
-        </div>
-
-        {/* Estado + toggle rellenable */}
-        <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap'}}>
-          <div style={TAG(cerrado?'#14532d':'#162035',cerrado?'#86efac':'#60a5fa')}>
-            {cerrado?'🔒 CERRADO':'🟢 ABIERTO'}
-          </div>
-          <div style={{fontSize:10,color:'#475569',flex:1,fontFamily:'DM Mono,monospace',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-            {nombreDia(fecha)}
-          </div>
-          {/* Toggle ES / FS */}
-          <div style={{display:'flex',alignItems:'center',gap:6,background:'#0a1628',borderRadius:8,padding:'4px 9px',border:'1px solid #1a3050'}}>
-            <span style={{fontSize:9,fontWeight:700,color:tipo==='ES'?'#93c5fd':'#475569'}}>ES</span>
-            <label className="tog">
-              <input type="checkbox" checked={tipo==='FS'}
-                onChange={e=>setOverride(e.target.checked?'FS':'ES')}/>
-              <span className="sli"/>
-            </label>
-            <span style={{fontSize:9,fontWeight:700,color:tipo==='FS'?'#fb923c':'#475569'}}>FS</span>
-            {ovRel!==null&&(
-              <button onClick={()=>setOverride(null)}
-                style={{fontSize:9,color:'#64748b',background:'none',border:'none',cursor:'pointer',textDecoration:'underline',marginLeft:2}}>
-                auto
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            {configOk()&&(
+              <button onClick={cargarTodo}
+                style={{width:36,height:36,borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <span className={syncing?'spin':''}>🔄</span>
               </button>
             )}
+            <button onClick={()=>setShowDatePick(p=>!p)}
+              style={{background:'#162035',border:'1px solid #1e3a5f',borderRadius:10,padding:'7px 12px',color:'#93c5fd',fontSize:12,fontWeight:700}}>
+              📅 {diaCorto(fecha)}
+            </button>
           </div>
-          <div style={TAG(tipo==='FS'?'#431407':'#0c2340',tipo==='FS'?'#fb923c':'#93c5fd')}>
-            {tipo==='FS'?'🍊 FIN SEMANA':'📘 ENTRE SEMANA'}
-            {ovRel===null&&<span style={{fontSize:8,opacity:.6}}> auto</span>}
+        </div>
+
+        {showDatePick&&(
+          <div style={{marginBottom:8}}>
+            <input type="date" value={fecha} onChange={e=>{setFecha(e.target.value);setShowDatePick(false);}}
+              style={{width:'100%',height:48,borderRadius:12,border:'2px solid #3b82f6',background:'#162035',
+                color:'#e2ecf8',fontSize:16,textAlign:'center',fontFamily:'DM Mono,monospace',padding:'0 12px'}}/>
+          </div>
+        )}
+
+        {/* Toggle rellenable + estado */}
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{padding:'3px 8px',borderRadius:10,fontSize:10,fontWeight:700,
+            background:cerrado?'#14532d':'#162035',color:cerrado?'#86efac':'#60a5fa'}}>
+            {cerrado?'🔒':'🟢'} {cerrado?'CERRADO':'ABIERTO'}
+          </div>
+          <div style={{flex:1,display:'flex',alignItems:'center',gap:7,background:'#0a1628',
+            borderRadius:10,padding:'6px 10px',border:'1px solid #1a3050',justifyContent:'center'}}>
+            <span style={{fontSize:11,fontWeight:700,color:tipo==='ES'?'#93c5fd':'#475569'}}>ES</span>
+            <label className="tog">
+              <input type="checkbox" checked={tipo==='FS'} onChange={e=>setOverride(e.target.checked?'FS':'ES')}/>
+              <span className="sli"/>
+            </label>
+            <span style={{fontSize:11,fontWeight:700,color:tipo==='FS'?'#fb923c':'#475569'}}>FS</span>
+            <span style={{fontSize:10,fontWeight:700,color:tipo==='FS'?'#fb923c':'#93c5fd',marginLeft:2}}>
+              {tipo==='FS'?'🍊 FIN SEMANA':'📘 ENTRE SEMANA'}
+              {ovRel===null&&<span style={{fontSize:8,opacity:.5}}> auto</span>}
+            </span>
+            {ovRel!==null&&<button onClick={()=>setOverride(null)} style={{fontSize:9,color:'#64748b',background:'none',border:'none',textDecoration:'underline'}}>auto</button>}
           </div>
         </div>
       </div>
 
-      {/* NAV */}
-      <div style={{background:'#0d1b33',borderBottom:'1px solid #1a3050',display:'flex',flexShrink:0}}>
+      {/* NAV BOTTOM */}
+      <div style={{order:10,background:'#0d1b33',borderTop:'1px solid #1a3050',display:'flex',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
         {NAV.map(n=>(
           <button key={n.id} onClick={()=>setVista(n.id)}
-            style={{flex:1,padding:'8px 4px',border:'none',cursor:'pointer',background:'transparent',
-              borderBottom:`2px solid ${vista===n.id?'#3b82f6':'transparent'}`,
-              color:vista===n.id?'#60a5fa':'#64748b',fontWeight:600,fontSize:10,fontFamily:'Sora,sans-serif'}}>
-            <div style={{fontSize:16}}>{n.icon}</div><div style={{marginTop:1}}>{n.l}</div>
+            style={{flex:1,padding:'10px 4px 8px',border:'none',background:'transparent',
+              borderTop:`3px solid ${vista===n.id?'#3b82f6':'transparent'}`,
+              color:vista===n.id?'#60a5fa':'#64748b',fontWeight:700,fontSize:10}}>
+            <div style={{fontSize:20}}>{n.icon}</div>
+            <div style={{marginTop:2}}>{n.l}</div>
           </button>
         ))}
       </div>
 
       {/* CONTENIDO */}
-      <div style={{flex:1,overflowY:'auto',padding:'10px 12px 28px'}}>
+      <div style={{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch',padding:'12px 14px 16px'}}>
 
-        {/* ══════════════ VISTA DÍA ══════════════ */}
+        {/* ══ DÍA ══ */}
         {vista==='dia'&&(
           <div className="fu">
+            {/* Banner configuración si no hay URL */}
+            {!configOk()&&(
+              <div style={{background:'#1c1700',border:'1px solid #f59e0b',borderRadius:14,padding:'14px',marginBottom:14}}>
+                <div style={{fontWeight:700,fontSize:13,color:'#fbbf24',marginBottom:4}}>⚠️ Sin sincronización con Google Sheets</div>
+                <div style={{fontSize:11,color:'#d97706',lineHeight:1.5,marginBottom:10}}>
+                  Los datos se guardan solo en este dispositivo. Para sincronizar entre celular y computadora, configura tu Apps Script.
+                </div>
+                <button onClick={()=>setShowConfig(true)}
+                  style={{height:44,padding:'0 18px',borderRadius:12,border:'none',background:'#f59e0b',color:'#1c1700',fontSize:13,fontWeight:800}}>
+                  🔗 Configurar Google Sheets
+                </button>
+              </div>
+            )}
 
             {/* KPIs */}
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:10}}>
-              {[
-                [conConteo+'/'+calc.length,'Conteos','#3b82f6'],
-                [alertas.length||'—','Alertas',alertas.length?'#ef4444':'#1e3a5f'],
-                [totalPedir,'A pedir','#22c55e'],
-                [costoPedir>0?'$'+Math.round(costoPedir):'—','Costo','#f97316'],
-              ].map(([v,l,c])=>(
-                <div key={l} style={{...CARD(),padding:'8px 6px',textAlign:'center'}}>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:14}}>
+              {[[conConteo+'/'+calc.length,'Conteos','#3b82f6'],[alertas||'—','Alertas',alertas?'#ef4444':'#1e3a5f'],[totalPedir,'A pedir','#22c55e'],[costoPedir>0?'$'+Math.round(costoPedir):'—','Costo','#f97316']].map(([v,l,c])=>(
+                <div key={l} style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'10px 4px',textAlign:'center'}}>
                   <div style={{fontWeight:800,fontSize:13,color:c,fontFamily:'DM Mono,monospace'}}>{v}</div>
-                  <div style={{fontSize:8,color:'#475569',marginTop:1}}>{l}</div>
+                  <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
                 </div>
               ))}
             </div>
 
-            {/* Fases + cierre */}
-            <div style={{display:'flex',gap:5,marginBottom:8,flexWrap:'wrap'}}>
+            {/* Fases */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:12}}>
               {FASES.map(f=>(
                 <button key={f.id} onClick={()=>setFase(f.id)}
-                  style={{...BTN(fase===f.id?'#1d4ed8':'#162035',fase===f.id?'#fff':'#64748b','6px 10px'),
-                    border:fase===f.id?'1px solid #3b82f6':'1px solid #1a3050',fontSize:11}}>
-                  {f.icon} {f.l}
+                  style={{height:50,borderRadius:12,border:`2px solid ${fase===f.id?'#3b82f6':'#1a3050'}`,
+                    background:fase===f.id?'#1d4ed8':'#0d1b33',color:fase===f.id?'#fff':'#64748b',
+                    fontSize:11,fontWeight:700,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:1}}>
+                  <span style={{fontSize:16}}>{f.icon}</span><span>{f.l}</span>
                 </button>
               ))}
-              {!cerrado&&(
-                <button onClick={()=>setConfCierre(true)}
-                  style={{...BTN('#14532d','#86efac','6px 10px'),border:'1px solid #166534',fontSize:11,marginLeft:'auto'}}>
-                  🔒 Cerrar día
-                </button>
+            </div>
+
+            {/* REMISIONES PDF */}
+            <div style={{background:'#0a1020',border:'1px solid #3b82f6',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                <div style={{fontWeight:700,fontSize:12,color:'#60a5fa'}}>📄 Remisiones PDF</div>
+                {remisiones.length>0&&<button onClick={()=>setShowRemisiones(p=>!p)} style={{fontSize:10,color:'#60a5fa',background:'none',border:'none',textDecoration:'underline'}}>{showRemisiones?'Ocultar':'Ver detalle'} ({remisiones.length})</button>}
+              </div>
+              <div style={{fontSize:11,color:'#93c5fd',marginBottom:10,lineHeight:1.5}}>
+                Sube una o varias remisiones — los insumos se suman automáticamente al recibido del día.
+              </div>
+              <button onClick={()=>pdfRef.current.click()} disabled={cerrado||procesandoPDF}
+                style={{width:'100%',height:48,borderRadius:12,border:`2px solid ${cerrado?'#1a3050':'#3b82f6'}`,
+                  background:cerrado?'transparent':'#1d4ed8',color:cerrado?'#475569':'#fff',
+                  fontSize:13,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+                {procesandoPDF?<span style={{width:16,height:16,borderRadius:'50%',border:'2px solid #fff',borderTopColor:'transparent',display:'inline-block',animation:'spin .7s linear infinite'}}/>:'📄'}
+                {procesandoPDF?'Leyendo remisiones...':cerrado?'Día cerrado':'Subir remisión(es) PDF'}
+              </button>
+              {/* Detalle de remisiones cargadas */}
+              {showRemisiones&&remisiones.length>0&&(
+                <div style={{marginTop:10,borderTop:'1px solid #1e3a5f',paddingTop:10}}>
+                  {remisiones.map((r,i)=>(
+                    <div key={i} style={{marginBottom:8,background:'#162035',borderRadius:8,padding:'8px 10px'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                        <div style={{fontSize:11,fontWeight:700,color:'#60a5fa'}}>{r.nombre}</div>
+                        <div style={{fontSize:10,color:'#475569'}}>{r.fecha} · {r.items} insumos</div>
+                      </div>
+                      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                        {Object.entries(r.data).map(([id,cant])=>{
+                          const ins=INSUMOS_BASE.find(x=>x.id===+id);
+                          return ins?(
+                            <span key={id} style={{padding:'2px 7px',borderRadius:10,fontSize:10,background:'#1e3a5f',color:'#93c5fd'}}>
+                              {ins.nombreCorto}: +{fmt2(cant)}
+                            </span>
+                          ):null;
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Banner Excel / Import */}
-            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:10,padding:'10px 12px',marginBottom:10}}>
-              <div style={{fontWeight:700,fontSize:12,color:'#4ade80',marginBottom:4}}>📊 Importar existencias</div>
-              <div style={{fontSize:10,color:'#86efac',lineHeight:1.5,marginBottom:8}}>
-                Puedes importar <b>el Excel de Existencias Ped Produ</b> que ya usas día a día, o el que exporta RellenApp. La app detecta el formato automáticamente.
-              </div>
-              <div style={{display:'flex',gap:7,flexWrap:'wrap'}}>
-                <button onClick={handleExportar} style={BTN('#166534','#fff','7px 12px')}>📥 Exportar hoja del día</button>
+            {/* Importar Excel */}
+            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
+              <div style={{fontWeight:700,fontSize:12,color:'#4ade80',marginBottom:6}}>📊 Importar existencias desde Excel</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <button onClick={handleExportar} style={{height:48,borderRadius:12,border:'none',background:'#166534',color:'#fff',fontSize:13,fontWeight:700}}>📥 Exportar</button>
                 <button onClick={()=>fileRef.current.click()} disabled={cerrado||importando}
-                  style={{...BTN(cerrado?'#162035':'#1d4ed8',cerrado?'#475569':'#fff','7px 12px'),opacity:cerrado?.5:1}}>
-                  {importando
-                    ? <span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',border:'2px solid #fff',borderTopColor:'transparent',animation:'spin .7s linear infinite'}}/>
-                    : '📤'}
-                  {importando?' Cargando...':cerrado?' (cerrado)':' Importar Excel'}
+                  style={{height:48,borderRadius:12,border:`2px solid ${cerrado?'#1a3050':'#1d4ed8'}`,background:cerrado?'transparent':'#1d4ed8',color:cerrado?'#475569':'#fff',fontSize:13,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+                  {importando?<span style={{width:16,height:16,borderRadius:'50%',border:'2px solid #fff',borderTopColor:'transparent',display:'inline-block',animation:'spin .7s linear infinite'}}/>:'📤'}
+                  {importando?'Cargando...':cerrado?'Cerrado':'Importar'}
                 </button>
               </div>
-              {importRes&&(
-                <div style={{marginTop:7,fontSize:10,fontWeight:600,color:importRes.ok?'#4ade80':'#f87171'}}>
-                  {importRes.ok
-                    ? `✅ ${importRes.n} existencias cargadas · Formato: ${importRes.fmt}`
-                    : `❌ ${importRes.error}`}
-                </div>
-              )}
+              {importRes&&<div style={{marginTop:8,fontSize:11,fontWeight:600,color:importRes.ok?'#4ade80':'#f87171',textAlign:'center'}}>{importRes.ok?`✅ ${importRes.n} existencias cargadas`:`❌ ${importRes.error}`}</div>}
             </div>
 
-            {/* Buscador */}
-            <input value={busq} onChange={e=>setBusq(e.target.value)}
-              placeholder="🔍 Buscar por nombre o clave..." style={{...INP,marginBottom:8}}/>
+            {/* Cerrar día */}
+            {!cerrado&&<button onClick={()=>setShowCierre(true)} style={{width:'100%',height:52,borderRadius:14,border:'2px solid #166534',background:'#0a1a10',color:'#86efac',fontSize:15,fontWeight:800,marginBottom:12}}>🔒 Cerrar día y generar pedido</button>}
 
-            {/* Lista de insumos */}
-            {filtrado.map((ins,idx)=>{
-              const bajo = ins.fin!==null && ins.fin < ins.rel*0.25;
-              const ok   = ins.fin!==null && ins.fin >= ins.rel*0.25;
-              return (
-                <div key={ins.id} className="fu"
-                  style={{...CARD(bajo?'#7f1d1d':ok?'#14532d':'#1a3050'),padding:'10px 12px',marginBottom:7,animationDelay:`${idx*.02}s`}}>
+            {/* Búsqueda */}
+            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar insumo..." inputMode="search"
+              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:15,padding:'0 16px',marginBottom:12}}/>
 
-                  {/* Cabecera insumo */}
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:8}}>
-                    <div style={{flex:1,paddingRight:8}}>
-                      <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace',marginBottom:1}}>
-                        {ins.codigo} · {ins.unidad} · {fmt$(ins.precio)}
-                      </div>
-                      <div style={{fontWeight:600,fontSize:12,lineHeight:1.3,color:'#e2ecf8'}}>{ins.nombre}</div>
-                      <div style={{fontSize:9,fontFamily:'DM Mono,monospace',marginTop:2,color:tipo==='FS'?'#fb923c':'#93c5fd'}}>
-                        Rellenable {tipo}: <b>{ins.rel}</b>
-                        {ins.stockES!==ins.stockFS&&(
-                          <span style={{color:'#475569',marginLeft:6}}>
-                            (ES:{ins.stockES} / FS:{ins.stockFS})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{fontSize:15,flexShrink:0}}>{bajo?'⚠️':ok?'✅':'○'}</div>
-                  </div>
-
-                  {/* FASE 1: RECIBIDO */}
-                  {fase==='recibido'&&(
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,alignItems:'end'}}>
-                      <div>
-                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>INICIO DÍA</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#94a3b8'}}>{fmt2(ins.ini)}</div>
-                      </div>
-                      <div>
-                        <div style={{fontSize:9,color:'#60a5fa',fontWeight:600,marginBottom:2}}>RECIBIDO HOY</div>
-                        <input type="number" min="0" step="0.5"
-                          value={reg.recibido?.[ins.id]??''}
-                          disabled={cerrado}
-                          onChange={e=>setVal('recibido',ins.id,e.target.value)}
-                          style={{...INP,fontSize:20,fontWeight:800,color:'#60a5fa',textAlign:'center',padding:'4px'}}
-                          placeholder="0"/>
-                      </div>
-                      <div>
-                        <div style={{fontSize:9,color:'#22c55e',marginBottom:2}}>DISPONIBLE</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#4ade80'}}>{fmt2(ins.disp)}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* FASE 2: CONTEO FINAL */}
-                  {fase==='conteo'&&(
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:6,alignItems:'end'}}>
-                      <div>
-                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>DISPONIBLE</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
-                      </div>
-                      <div>
-                        <div style={{fontSize:9,color:'#fb923c',fontWeight:600,marginBottom:2}}>CONTEO FINAL</div>
-                        <input type="number" min="0" step="0.5"
-                          value={reg.conteoFin?.[ins.id]??''}
-                          disabled={cerrado}
-                          onChange={e=>setVal('conteoFin',ins.id,e.target.value)}
-                          style={{...INP,fontSize:17,fontWeight:700,color:bajo?'#f87171':'#fb923c',textAlign:'center',padding:'3px'}}
-                          placeholder="—"/>
-                      </div>
-                      <div>
-                        <div style={{fontSize:9,color:'#94a3b8',marginBottom:2}}>CONSUMO</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:ins.cons>0?'#fb923c':'#475569'}}>
-                          {ins.cons!==null?fmt2(ins.cons):'—'}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{fontSize:9,color:bajo?'#fca5a5':ok?'#86efac':'#475569',marginBottom:2}}>STATUS</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:11,color:bajo?'#f87171':ok?'#4ade80':'#475569'}}>
-                          {ins.fin!==null?(bajo?'↓BAJO':'✓ OK'):'—'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* FASE 3: PEDIDO */}
-                  {fase==='pedido'&&(
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,alignItems:'center'}}>
-                      <div>
-                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>EXISTENCIA</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:14,color:'#94a3b8'}}>{fmt2(ins.fin??ins.ini)}</div>
-                      </div>
-                      <div style={{textAlign:'center'}}>
-                        <div style={{fontSize:9,color:'#22c55e',fontWeight:600,marginBottom:2}}>PEDIR ({tipo})</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:26,color:ins.pedir>0?'#4ade80':'#1e3a5f',lineHeight:1}}>
-                          {ins.pedir}
-                        </div>
-                        <div style={{fontSize:9,color:'#475569'}}>{ins.unidad}</div>
-                      </div>
-                      <div style={{textAlign:'right'}}>
-                        <div style={{fontSize:9,color:'#64748b',marginBottom:2}}>COSTO</div>
-                        <div style={{fontFamily:'DM Mono,monospace',fontSize:11,color:'#f97316'}}>
-                          {ins.precio>0 ? fmt$(ins.pedir*ins.precio) : '—'}
-                        </div>
-                        <div style={{fontSize:9,color:'#475569',marginTop:1}}>{fmt2(ins.fin??ins.ini)} → {ins.rel}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {filtrado.map(ins=><InsCard key={ins.id} ins={ins} fase={fase} reg={reg} cerrado={cerrado} tipo={tipo} onSet={setVal}/>)}
           </div>
         )}
 
-        {/* ══════════════ CATÁLOGO ══════════════ */}
-        {vista==='catalogo'&&(
+        {/* ══ PEDIDO ══ */}
+        {vista==='pedido'&&(
           <div className="fu">
-            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:4}}>📦 Catálogo de insumos</div>
-            <div style={{fontSize:11,color:'#475569',marginBottom:10}}>Toca un insumo para editar precio y rellenables.</div>
-            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar..." style={{...INP,marginBottom:10}}/>
-            {db.insumos
-              .filter(i=>!busq||i.nombre.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq))
-              .map(ins=>(
-              <div key={ins.id} style={{...CARD(),padding:'10px 12px',marginBottom:6,display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}
-                onClick={()=>{setFormIns({...ins});setModIns(true);}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <div style={{fontWeight:800,fontSize:17,color:'#22c55e'}}>🛒 Pedido</div>
+              <button onClick={handleExportar} style={{height:40,padding:'0 14px',borderRadius:10,border:'none',background:'#14532d',color:'#86efac',fontSize:13,fontWeight:700}}>📥 Exportar</button>
+            </div>
+            <div style={{background:tipo==='FS'?'#2c1000':'#0c1e33',border:`1px solid ${tipo==='FS'?'#c2410c':'#1d4ed8'}`,borderRadius:12,padding:'10px 14px',marginBottom:14,fontSize:12,color:tipo==='FS'?'#fb923c':'#93c5fd',fontWeight:600}}>
+              {tipo==='FS'?'🍊 Rellenable FIN DE SEMANA':'📘 Rellenable ENTRE SEMANA'} · {diaCorto(fecha)}
+            </div>
+            {calc.filter(i=>i.pedir>0).map(ins=>(
+              <div key={ins.id} style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:8,display:'flex',alignItems:'center',gap:14}}>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>{ins.codigo} · {ins.unidad}</div>
-                  <div style={{fontWeight:600,fontSize:12,marginTop:1,lineHeight:1.3}}>{ins.nombre}</div>
-                  <div style={{fontSize:9,color:'#64748b',fontFamily:'DM Mono,monospace',marginTop:2}}>
-                    Precio: {fmt$(ins.precio)} · ES: {ins.stockES} · FS: {ins.stockFS}
-                  </div>
+                  <div style={{fontWeight:700,fontSize:14}}>{ins.nombreCorto}</div>
+                  <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>{ins.codigo} · Exist:{fmt2(ins.fin??ins.ini)} → Rel:{ins.rel}</div>
                 </div>
-                <div style={{color:'#3b82f6',fontSize:16}}>✏️</div>
+                <div style={{textAlign:'center',minWidth:60}}>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:32,color:'#4ade80',lineHeight:1}}>{ins.pedir}</div>
+                  <div style={{fontSize:10,color:'#475569'}}>{ins.unidad}</div>
+                  <div style={{fontSize:11,color:'#f97316',fontFamily:'DM Mono,monospace',marginTop:2}}>{ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}</div>
+                </div>
               </div>
             ))}
+            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:14,padding:'16px',marginTop:8}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#475569',marginBottom:4}}>PIEZAS A PEDIR</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:34,color:'#4ade80'}}>{totalPedir}</div></div>
+                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#475569',marginBottom:4}}>COSTO ESTIMADO</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:20,color:'#f97316',marginTop:4}}>{costoPedir>0?fmt$(costoPedir):'—'}</div></div>
+              </div>
+            </div>
+            {calc.filter(i=>i.pedir===0).length>0&&(
+              <div style={{marginTop:10,background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px 14px'}}>
+                <div style={{fontSize:11,color:'#475569',marginBottom:8}}>✅ Stock suficiente — no pedir:</div>
+                <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+                  {calc.filter(i=>i.pedir===0).map(i=><span key={i.id} style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,background:'#0c2340',color:'#4ade80'}}>{i.nombreCorto}</span>)}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ══════════════ HISTORIAL ══════════════ */}
+        {/* ══ HISTORIAL ══ */}
         {vista==='historial'&&(
           <div className="fu">
-            <div style={{fontWeight:700,fontSize:14,color:'#60a5fa',marginBottom:12}}>📊 Historial de días</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+              <div style={{fontWeight:800,fontSize:17,color:'#60a5fa'}}>📊 Historial</div>
+              {configOk()&&<button onClick={cargarTodo} style={{height:38,padding:'0 14px',borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',gap:6}}><span className={syncing?'spin':''}>🔄</span> Sincronizar todo</button>}
+            </div>
             {Object.entries(db.registros).sort(([a],[b])=>b.localeCompare(a)).map(([f,r])=>{
-              const tr = tipoRel(f, r.overrideRel??null);
-              const c  = calcDia(db.insumos, r, tr);
-              const nC = c.filter(i=>i.fin!==null).length;
-              const tP = c.reduce((s,i)=>s+i.pedir,0);
-              const tC = c.reduce((s,i)=>s+(i.cons||0),0);
-              const tCosto = c.reduce((s,i)=>s+i.pedir*i.precio,0);
+              const tr=tipoRel(f,r.overrideRel??null);
+              const c=calcDia(db.insumos,r,tr);
+              const nC=c.filter(i=>i.fin!==null).length;
+              const tP=c.reduce((s,i)=>s+i.pedir,0);
+              const tCosto=c.reduce((s,i)=>s+i.pedir*i.precio,0);
               return (
-                <div key={f} style={{...CARD(),padding:'12px',marginBottom:8,cursor:'pointer'}}
-                  onClick={()=>{setFecha(f);setVista('dia');}}>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                <button key={f} onClick={()=>{setFecha(f);setVista('dia');}}
+                  style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:10,textAlign:'left'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                     <div>
-                      <div style={{fontWeight:700,fontSize:12}}>{nombreDia(f)}</div>
-                      <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:1}}>
-                        {f} · {tr==='FS'?'🍊 Fin semana':'📘 Entre semana'}
-                      </div>
+                      <div style={{fontWeight:700,fontSize:14,textTransform:'capitalize'}}>{diaNombre(f)}</div>
+                      <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>{f} · {tr==='FS'?'🍊 FS':'📘 ES'}</div>
                     </div>
-                    <div style={TAG(r.cerrado?'#14532d':'#162035',r.cerrado?'#86efac':'#60a5fa')}>
-                      {r.cerrado?'🔒 Cerrado':'🟢 Abierto'}
-                    </div>
+                    <div style={{padding:'4px 10px',borderRadius:10,fontSize:11,fontWeight:700,background:r.cerrado?'#14532d':'#162035',color:r.cerrado?'#86efac':'#60a5fa'}}>{r.cerrado?'🔒 Cerrado':'🟢 Abierto'}</div>
                   </div>
-                  <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6}}>
-                    {[[nC+'/'+c.length,'Conteos','#3b82f6'],[tC,'Consumo','#f97316'],[tP,'A pedir','#22c55e'],[tCosto>0?'$'+Math.round(tCosto):'—','Costo ped.','#fb923c']].map(([v,l,col])=>(
-                      <div key={l} style={{background:'#08101e',borderRadius:7,padding:'6px',textAlign:'center'}}>
-                        <div style={{fontWeight:700,fontSize:11,color:col,fontFamily:'DM Mono,monospace'}}>{v}</div>
-                        <div style={{fontSize:8,color:'#475569',marginTop:1}}>{l}</div>
+                  <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+                    {[[nC+'/'+c.length,'Conteos','#3b82f6'],[tP,'A pedir','#22c55e'],[tCosto>0?'$'+Math.round(tCosto):'—','Costo','#f97316']].map(([v,l,col])=>(
+                      <div key={l} style={{background:'#08101e',borderRadius:8,padding:'8px 4px',textAlign:'center'}}>
+                        <div style={{fontWeight:800,fontSize:13,color:col,fontFamily:'DM Mono,monospace'}}>{v}</div>
+                        <div style={{fontSize:9,color:'#475569',marginTop:2}}>{l}</div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </button>
               );
             })}
-            {!Object.keys(db.registros).length&&(
-              <div style={{textAlign:'center',color:'#475569',padding:40,fontSize:12}}>
-                Sin historial aún. Empieza registrando el día de hoy.
-              </div>
-            )}
+            {!Object.keys(db.registros).length&&<div style={{textAlign:'center',color:'#475569',padding:48,fontSize:14}}>Sin historial aún.</div>}
           </div>
         )}
 
-        {/* ══════════════ PEDIDO ══════════════ */}
-        {vista==='pedido'&&(
+        {/* ══ CONFIG ══ */}
+        {vista==='catalogo'&&(
           <div className="fu">
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-              <div style={{fontWeight:700,fontSize:14,color:'#22c55e'}}>🛒 Pedido de Producción</div>
-              <button onClick={handleExportar} style={BTN('#14532d','#86efac','6px 10px')}>📥 Exportar Excel</button>
-            </div>
-            <div style={{fontSize:10,color:'#475569',marginBottom:4,fontFamily:'DM Mono,monospace'}}>
-              {nombreDia(fecha)} · {tipo==='FS'?'🍊 FIN DE SEMANA':'📘 ENTRE SEMANA'}
+            <div style={{fontWeight:800,fontSize:17,color:'#60a5fa',marginBottom:14}}>⚙️ Configuración</div>
+
+            {/* Google Sheets */}
+            <div style={{background:'#08101e',border:`1px solid ${configOk()?'#166534':'#f59e0b'}`,borderRadius:14,padding:'14px',marginBottom:16}}>
+              <div style={{fontWeight:700,fontSize:13,color:configOk()?'#4ade80':'#fbbf24',marginBottom:4}}>
+                {configOk()?'✅ Google Sheets conectado':'⚠️ Google Sheets sin configurar'}
+              </div>
+              <div style={{fontSize:11,color:'#64748b',marginBottom:12,fontFamily:'DM Mono,monospace',wordBreak:'break-all'}}>
+                {scriptUrl||'Sin URL configurada'}
+              </div>
+              <button onClick={()=>setShowConfig(true)}
+                style={{height:44,padding:'0 18px',borderRadius:12,border:`1px solid ${configOk()?'#166534':'#f59e0b'}`,background:'transparent',color:configOk()?'#4ade80':'#fbbf24',fontSize:13,fontWeight:700}}>
+                🔗 {configOk()?'Cambiar URL':'Configurar URL'}
+              </button>
             </div>
 
-            <div style={{background:tipo==='FS'?'#2c1000':'#0c1e33',border:`1px solid ${tipo==='FS'?'#c2410c':'#1d4ed8'}`,borderRadius:9,padding:'8px 12px',marginBottom:12,fontSize:11,color:tipo==='FS'?'#fb923c':'#93c5fd'}}>
-              {tipo==='FS'
-                ? '🍊 Rellenable FIN DE SEMANA — stocks más altos (viernes y sábado)'
-                : '📘 Rellenable ENTRE SEMANA — stocks estándar (lunes a jueves)'}
-              {ovRel!==null&&<span style={{marginLeft:8,fontSize:9,opacity:.6}}>(asignado manualmente)</span>}
-            </div>
-
-            {calc.filter(i=>i.pedir>0).map(ins=>(
-              <div key={ins.id} style={{...CARD(),padding:'10px 12px',marginBottom:6,display:'flex',alignItems:'center',gap:12}}>
+            {/* Catálogo */}
+            <div style={{fontWeight:700,fontSize:14,color:'#e2ecf8',marginBottom:8}}>📦 Insumos — editar precio y rellenables</div>
+            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar..." inputMode="search"
+              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:15,padding:'0 16px',marginBottom:12}}/>
+            {db.insumos.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq)).map(ins=>(
+              <button key={ins.id} onClick={()=>{setFormEdit({...ins});setModEdit(ins);}}
+                style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:8,textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:9,color:'#475569',fontFamily:'DM Mono,monospace'}}>{ins.codigo}</div>
-                  <div style={{fontWeight:600,fontSize:12,lineHeight:1.3}}>{ins.nombre}</div>
-                  <div style={{fontSize:9,color:'#64748b',fontFamily:'DM Mono,monospace',marginTop:1}}>
-                    Exist: {fmt2(ins.fin??ins.ini)} → Rel: {ins.rel} · {fmt$(ins.precio)}/{ins.unidad}
+                  <div style={{fontWeight:700,fontSize:14}}>{ins.nombreCorto}</div>
+                  <div style={{fontSize:11,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:3}}>
+                    {ins.codigo} · {fmt$(ins.precio)} · ES:{ins.stockES} · FS:{ins.stockFS}
                   </div>
                 </div>
-                <div style={{textAlign:'center',minWidth:48}}>
-                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:26,color:'#4ade80',lineHeight:1}}>{ins.pedir}</div>
-                  <div style={{fontSize:9,color:'#475569'}}>{ins.unidad}</div>
-                  <div style={{fontSize:10,color:'#f97316',fontFamily:'DM Mono,monospace'}}>
-                    {ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}
-                  </div>
-                </div>
-              </div>
+                <div style={{fontSize:22}}>✏️</div>
+              </button>
             ))}
-
-            {calc.filter(i=>i.pedir===0).length>0&&(
-              <div style={{...CARD(),padding:'10px 12px',marginTop:8}}>
-                <div style={{fontSize:10,color:'#475569',marginBottom:6}}>✅ Stock suficiente — no pedir:</div>
-                <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
-                  {calc.filter(i=>i.pedir===0).map(i=>(
-                    <span key={i.id} style={TAG('#0c2340','#4ade80')}>
-                      {i.nombre.replace('FG SPR ','').replace('B SPR ','').split(' ').slice(0,3).join(' ')}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Totales */}
-            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:10,padding:'14px',marginTop:10}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div>
-                  <div style={{fontSize:10,color:'#475569',marginBottom:2}}>TOTAL PIEZAS A PEDIR</div>
-                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:28,color:'#4ade80'}}>{totalPedir}</div>
-                </div>
-                <div>
-                  <div style={{fontSize:10,color:'#475569',marginBottom:2}}>COSTO ESTIMADO</div>
-                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#f97316'}}>
-                    {costoPedir>0?fmt$(costoPedir):'—'}
-                  </div>
-                  <div style={{fontSize:9,color:'#475569',marginTop:1}}>
-                    {calc.filter(i=>i.pedir>0&&i.precio===0).length>0&&
-                      `* Sin precio: ${calc.filter(i=>i.pedir>0&&i.precio===0).map(i=>i.nombre.split(' ').slice(2,4).join(' ')).join(', ')}`}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
-
       </div>
     </div>
   );
