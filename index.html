@@ -1413,13 +1413,37 @@ function App(){
           </div>
 
           {!reg.remision?(
-            <div style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:32,textAlign:'center'}}>
+            <div style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:24,textAlign:'center'}}>
               <div style={{fontSize:32,marginBottom:12}}>📋</div>
               <div style={{fontWeight:700,fontSize:14,color:'#64748b',marginBottom:6}}>Sin remisión para este día</div>
-              <div style={{fontSize:12,color:'#475569',lineHeight:1.5}}>
+              <div style={{fontSize:12,color:'#475569',lineHeight:1.5,marginBottom:16}}>
                 La remisión se genera automáticamente al cerrar el día.<br/>
-                {!cerrado&&'Cierra el día para generar la remisión.'}
+                {!cerrado&&'Cierra el día para generarla.'}
               </div>
+              {/* Botón para generar remisión manualmente desde el recibido */}
+              {Object.keys(reg.recibido||{}).length>0&&(
+                <button onClick={()=>{
+                  const remisionItems = INSUMOS.map(ins=>{
+                    const rec = reg.recibido?.[ins.id]??0;
+                    if(rec<=0) return null;
+                    return {
+                      codigo: ins.codigo, nombre: ins.nombre,
+                      nombreCorto: ins.nombreCorto, unidad: ins.unidad,
+                      cantidad: rec, precio: ins.precio, subtotal: rec*ins.precio,
+                    };
+                  }).filter(Boolean);
+                  const total = remisionItems.reduce((s,i)=>s+i.subtotal,0);
+                  setDb(d=>({...d,registros:{...d.registros,[fecha]:{
+                    ...d.registros[fecha],
+                    remision:{fecha, items:remisionItems, total, generada:new Date().toISOString()}
+                  }}}));
+                  showToast('✅ Remisión generada desde el recibido');
+                }}
+                style={{width:'100%',height:48,borderRadius:12,border:'2px solid #3b82f6',
+                  background:'#162035',color:'#60a5fa',fontSize:14,fontWeight:700}}>
+                  📄 Generar remisión desde recibido
+                </button>
+              )}
             </div>
           ):(
             <div>
