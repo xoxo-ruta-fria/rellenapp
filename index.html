@@ -474,6 +474,120 @@ async function procesarRemisiones(files, callback){
 }
 
 // ═══════════════════════════════════════════════════════
+// EXPORTAR REMISIÓN DEL DÍA EN PDF (via Excel)
+// ═══════════════════════════════════════════════════════
+function exportarRemision(fecha, remision, rutaNombre){
+  if(!remision||!remision.items||remision.items.length===0) return;
+  const wb  = XLSX.utils.book_new();
+  const dia = diaNombre(fecha);
+
+  const wsData = [
+    [`REMISIÓN DIARIA · ${rutaNombre||'RUTA FRÍA'} · SUCURSAL XOXO`,'','','','',''],
+    [`Fecha: ${dia}`,'','','','',''],
+    [`Generada: ${new Date(remision.generada||Date.now()).toLocaleString('es-MX')}`,'','','','',''],
+    ['','','','','',''],
+    ['CLAVE','NOMBRE','U.M','CANTIDAD','PRECIO UNIT.','SUBTOTAL'],
+    ...remision.items.map(i=>[
+      i.codigo, i.nombre, i.unidad,
+      i.cantidad,
+      i.precio>0?i.precio:'—',
+      i.precio>0?i.subtotal:'—'
+    ]),
+    ['','','','','TOTAL',remision.total>0?remision.total:'—'],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols']=[{wch:14},{wch:42},{wch:6},{wch:10},{wch:13},{wch:13}];
+  ws['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:5}},
+    {s:{r:1,c:0},e:{r:1,c:5}},
+    {s:{r:2,c:0},e:{r:2,c:5}},
+  ];
+
+  // Estilo encabezado
+  ['A1','A2','A3'].forEach(ref=>{
+    if(ws[ref]) ws[ref].s={font:{bold:true,sz:ref==='A1'?13:10},fill:{patternType:'solid',fgColor:{rgb:'0F2A4A'}},font:{bold:true,color:{rgb:'FFFFFF'}}};
+  });
+
+  // Estilo fila encabezado tabla
+  ['A5','B5','C5','D5','E5','F5'].forEach(ref=>{
+    if(ws[ref]) ws[ref].s={fill:{patternType:'solid',fgColor:{rgb:'166534'}},font:{bold:true,color:{rgb:'FFFFFF'},sz:10},alignment:{horizontal:'center'}};
+  });
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Remisión');
+  XLSX.writeFile(wb, `Remision_${fecha}_${(rutaNombre||'RutaFria').replace(/\s/g,'')}.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORTAR REPORTE SEMANAL
+// ═══════════════════════════════════════════════════════
+function exportarReporteSemanal(registros, insumos, rutaNombre){
+  // Obtener lunes y domingo de la semana anterior
+  const hoy   = new Date();
+  const diaSem = hoy.getDay(); // 0=Dom
+  const lunes  = new Date(hoy);
+  lunes.setDate(hoy.getDate() - (diaSem===0?6:diaSem-1) - 7);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+
+  const fechasSemanales = [];
+  for(let d=new Date(lunes); d<=domingo; d.setDate(d.getDate()+1)){
+    fechasSemanales.push(d.toISOString().slice(0,10));
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // Hoja 1: Resumen por día
+  const resumenRows = [
+    [`REPORTE SEMANAL · ${rutaNombre||'RUTA FRÍA'} · SUCURSAL XOXO`,'','',''],
+    [`Semana: ${lunes.toLocaleDateString('es-MX',{day:'2-digit',month:'long'})} al ${domingo.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'})}`,'','',''],
+    ['','','',''],
+    ['FECHA','DÍA','INSUMOS RECIBIDOS','COSTO TOTAL'],
+  ];
+
+  let totalSemana = 0;
+  const detallesPorDia = [];
+
+  fechasSemanales.forEach(f=>{
+    const reg = registros[f];
+    const rem = reg?.remision;
+    const diaN = new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long'});
+    if(rem&&rem.items&&rem.items.length>0){
+      resumenRows.push([f, diaN, rem.items.length, rem.total>0?rem.total:'—']);
+      totalSemana += rem.total||0;
+      detallesPorDia.push({fecha:f, dia:diaN, remision:rem});
+    } else {
+      resumenRows.push([f, diaN, 'Sin remisión', '—']);
+    }
+  });
+
+  resumenRows.push(['','','TOTAL SEMANA', totalSemana>0?totalSemana:'—']);
+
+  const wsResumen = XLSX.utils.aoa_to_sheet(resumenRows);
+  wsResumen['!cols']=[{wch:13},{wch:14},{wch:20},{wch:14}];
+  wsResumen['!merges']=[{s:{r:0,c:0},e:{r:0,c:3}},{s:{r:1,c:0},e:{r:1,c:3}}];
+  XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen Semanal');
+
+  // Hoja 2+: Una hoja por día con detalle
+  detallesPorDia.forEach(({fecha:f, dia, remision:rem})=>{
+    const rows = [
+      [`${dia.toUpperCase()} ${f}`,'','','',''],
+      ['CLAVE','NOMBRE','CANT.','PRECIO','SUBTOTAL'],
+      ...rem.items.map(i=>[i.codigo,i.nombreCorto||i.nombre,i.cantidad,i.precio>0?i.precio:'—',i.precio>0?i.subtotal:'—']),
+      ['','','','TOTAL',rem.total>0?rem.total:'—'],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:12},{wch:22},{wch:7},{wch:11},{wch:11}];
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
+    const nombreHoja = new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short',day:'2-digit'});
+    XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+  });
+
+  const semStr = `${lunes.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit'})}`;
+  XLSX.writeFile(wb, `ReporteSemanal_${semStr}_${(rutaNombre||'RutaFria').replace(/\s/g,'')}.xlsx`);
+}
+
+// ═══════════════════════════════════════════════════════
 // COMPONENTE: BOTÓN NUMÉRICO
 // ═══════════════════════════════════════════════════════
 function NumBtn({label,onPress,color='#1e3a5f',textColor='#e2ecf8'}){
@@ -808,8 +922,36 @@ function App(){
   const setOverride=val=>setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],overrideRel:val}}}));
 
   const cerrarDia=()=>{
-    setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],cerrado:true}}}));
-    showToast('✅ Día cerrado — existencias finales listas');
+    // Generar remisión del día con lo que realmente se recibió
+    const regActual = db.registros[fecha]||{};
+    const remisionItems = INSUMOS.map(ins=>{
+      const rec = regActual.recibido?.[ins.id]??0;
+      if(rec<=0) return null;
+      return {
+        codigo:   ins.codigo,
+        nombre:   ins.nombre,
+        nombreCorto: ins.nombreCorto,
+        unidad:   ins.unidad,
+        cantidad: rec,
+        precio:   ins.precio,
+        subtotal: rec * ins.precio,
+      };
+    }).filter(Boolean);
+
+    const totalRemision = remisionItems.reduce((s,i)=>s+i.subtotal,0);
+
+    // Guardar remisión en el registro del día
+    setDb(d=>({...d,registros:{...d.registros,[fecha]:{
+      ...d.registros[fecha],
+      cerrado:true,
+      remision:{
+        fecha,
+        items: remisionItems,
+        total: totalRemision,
+        generada: new Date().toISOString(),
+      }
+    }}}));
+    showToast('✅ Día cerrado — remisión generada');
     setFase('cierre'); setShowCierre(false);
   };
 
@@ -876,7 +1018,7 @@ function App(){
   const costoPedir = calc.reduce((s,i)=>s+i.pedir*i.precio,0);
 
   const FASES=[{id:'inicio',icon:'🌅',l:'Inicio'},{id:'recibido',icon:'📥',l:'Recibido'},{id:'conteo',icon:'🔢',l:'Conteo'},{id:'cierre',icon:'🌙',l:'Cierre'}];
-  const NAV=[{id:'dia',icon:'📅',l:'Hoy'},{id:'pedido',icon:'🛒',l:'Pedido'},{id:'historial',icon:'📊',l:'Historial'},{id:'catalogo',icon:'⚙️',l:'Config'}];
+  const NAV=[{id:'dia',icon:'📅',l:'Hoy'},{id:'pedido',icon:'🛒',l:'Pedido'},{id:'remision',icon:'📄',l:'Remisión'},{id:'historial',icon:'📊',l:'Historial'},{id:'catalogo',icon:'⚙️',l:'Config'}];
 
   // Indicador de sync
   const SyncDot = () => (
@@ -1195,7 +1337,15 @@ function App(){
             </div>
 
             {/* Cerrar día */}
-            {!cerrado&&<button onClick={()=>setShowCierre(true)} style={{width:'100%',height:52,borderRadius:14,border:'2px solid #166534',background:'#0a1a10',color:'#86efac',fontSize:15,fontWeight:800,marginBottom:12}}>🔒 Cerrar día y generar pedido</button>}
+            {!cerrado&&<button onClick={()=>setShowCierre(true)} style={{width:'100%',height:52,borderRadius:14,border:'2px solid #166534',background:'#0a1a10',color:'#86efac',fontSize:15,fontWeight:800,marginBottom:8}}>🔒 Cerrar día y generar remisión</button>}
+          {cerrado&&reg.remision&&(
+            <button onClick={()=>setVista('remision')}
+              style={{width:'100%',height:48,borderRadius:14,border:'2px solid #166534',
+                background:'#0a1a10',color:'#4ade80',fontSize:14,fontWeight:700,marginBottom:8,
+                display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+              📄 Ver remisión del día
+            </button>
+          )}
 
             {/* Búsqueda */}
             <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar insumo..." inputMode="search"
@@ -1245,12 +1395,95 @@ function App(){
           </div>
         )}
 
-        {/* ══ HISTORIAL ══ */}
+        {/* ══ REMISIÓN DEL DÍA (modal/panel) ══ */}
+      {vista==='remision'&&(
+        <div className="fu">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+            <div>
+              <div style={{fontWeight:800,fontSize:17,color:'#4ade80'}}>📄 Remisión del día</div>
+              <div style={{fontSize:11,color:'#475569',marginTop:2,fontFamily:'DM Mono,monospace'}}>{diaNombre(fecha)}</div>
+            </div>
+            <button onClick={()=>exportarRemision(fecha,reg.remision,rutaConfig?.nombre)}
+              disabled={!reg.remision}
+              style={{height:40,padding:'0 14px',borderRadius:10,border:'none',
+                background:reg.remision?'#166534':'#1a3050',
+                color:reg.remision?'#86efac':'#475569',fontSize:13,fontWeight:700}}>
+              📥 Descargar Excel
+            </button>
+          </div>
+
+          {!reg.remision?(
+            <div style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:32,textAlign:'center'}}>
+              <div style={{fontSize:32,marginBottom:12}}>📋</div>
+              <div style={{fontWeight:700,fontSize:14,color:'#64748b',marginBottom:6}}>Sin remisión para este día</div>
+              <div style={{fontSize:12,color:'#475569',lineHeight:1.5}}>
+                La remisión se genera automáticamente al cerrar el día.<br/>
+                {!cerrado&&'Cierra el día para generar la remisión.'}
+              </div>
+            </div>
+          ):(
+            <div>
+              {/* Resumen */}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+                <div style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px',textAlign:'center'}}>
+                  <div style={{fontSize:10,color:'#475569',marginBottom:4}}>INSUMOS</div>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:24,color:'#4ade80'}}>{reg.remision.items.length}</div>
+                </div>
+                <div style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px',textAlign:'center'}}>
+                  <div style={{fontSize:10,color:'#475569',marginBottom:4}}>COSTO TOTAL</div>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:18,color:'#f97316',marginTop:2}}>
+                    {reg.remision.total>0?fmt$(reg.remision.total):'Sin precios'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Lista de insumos */}
+              {reg.remision.items.map((item,i)=>(
+                <div key={i} style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',
+                  padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:600,fontSize:13}}>{item.nombreCorto||item.nombre}</div>
+                    <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>
+                      {item.codigo} · {item.unidad} · {fmt$(item.precio)}
+                    </div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:20,color:'#60a5fa'}}>{fmt2(item.cantidad)}</div>
+                    <div style={{fontSize:11,color:'#f97316',fontFamily:'DM Mono,monospace'}}>
+                      {item.precio>0?fmt$(item.subtotal):'—'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:12,padding:'14px',marginTop:4}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div style={{fontWeight:700,fontSize:13,color:'#4ade80'}}>TOTAL DEL DÍA</div>
+                  <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:22,color:'#f97316'}}>
+                    {reg.remision.total>0?fmt$(reg.remision.total):'—'}
+                  </div>
+                </div>
+                <div style={{fontSize:9,color:'#475569',marginTop:4,fontFamily:'DM Mono,monospace'}}>
+                  Generada: {new Date(reg.remision.generada||Date.now()).toLocaleString('es-MX')}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══ HISTORIAL ══ */}
         {vista==='historial'&&(
           <div className="fu">
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
               <div style={{fontWeight:800,fontSize:17,color:'#60a5fa'}}>📊 Historial</div>
-              {configOk()&&<button onClick={cargarTodo} style={{height:38,padding:'0 14px',borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:12,fontWeight:700,display:'flex',alignItems:'center',gap:6}}><span className={syncing?'spin':''}>🔄</span> Sincronizar todo</button>}
+              <div style={{display:'flex',gap:8}}>
+                <button onClick={()=>exportarReporteSemanal(db.registros,INSUMOS,rutaConfig?.nombre)}
+                  style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #166534',background:'#0a1a10',color:'#4ade80',fontSize:11,fontWeight:700}}>
+                  📈 Reporte semanal
+                </button>
+                {configOk()&&<button onClick={cargarTodo} style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',gap:4}}><span className={syncing?'spin':''}>🔄</span></button>}
+              </div>
             </div>
             {Object.entries(db.registros).sort(([a],[b])=>b.localeCompare(a)).map(([f,r])=>{
               const tr=tipoRel(f,r.overrideRel??null);
@@ -1259,14 +1492,17 @@ function App(){
               const tP=c.reduce((s,i)=>s+i.pedir,0);
               const tCosto=c.reduce((s,i)=>s+i.pedir*i.precio,0);
               return (
-                <button key={f} onClick={()=>{setFecha(f);setVista('dia');}}
+                <button key={f} onClick={()=>{setFecha(f);setVista(r.remision?'remision':'dia');}}
                   style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:10,textAlign:'left'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                     <div>
                       <div style={{fontWeight:700,fontSize:14,textTransform:'capitalize'}}>{diaNombre(f)}</div>
                       <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>{f} · {tr==='FS'?'🍊 FS':'📘 ES'}</div>
                     </div>
-                    <div style={{padding:'4px 10px',borderRadius:10,fontSize:11,fontWeight:700,background:r.cerrado?'#14532d':'#162035',color:r.cerrado?'#86efac':'#60a5fa'}}>{r.cerrado?'🔒 Cerrado':'🟢 Abierto'}</div>
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
+                      <div style={{padding:'4px 10px',borderRadius:10,fontSize:11,fontWeight:700,background:r.cerrado?'#14532d':'#162035',color:r.cerrado?'#86efac':'#60a5fa'}}>{r.cerrado?'🔒 Cerrado':'🟢 Abierto'}</div>
+                      {r.remision&&<div style={{padding:'2px 8px',borderRadius:8,fontSize:9,fontWeight:700,background:'#0c2a18',color:'#4ade80'}}>📄 Remisión</div>}
+                    </div>
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
                     {[[nC+'/'+c.length,'Conteos','#3b82f6'],[tP,'A pedir','#22c55e'],[tCosto>0?'$'+Math.round(tCosto):'—','Costo','#f97316']].map(([v,l,col])=>(
