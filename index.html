@@ -15,24 +15,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;background:#08101e;}
-body{font-family:'Sora',sans-serif;color:#e2ecf8;touch-action:manipulation;}
-::-webkit-scrollbar{display:none;}
+html,body{height:100%;overflow:hidden;background:#f9fafb;}
+body{font-family:'Sora',sans-serif;color:#111827;touch-action:manipulation;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px;}
 input,select,button{font-family:'Sora',sans-serif;-webkit-appearance:none;appearance:none;}
-select option{background:#0d1b33;}
+select option{background:#fff;}
 button{cursor:pointer;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.fu{animation:fadeUp .25s ease both;}
+.fu{animation:fadeUp .22s ease both;}
 .spin{animation:spin .8s linear infinite;}
 .pulse{animation:pulse 1.5s ease infinite;}
-.tog{position:relative;display:inline-block;width:52px;height:28px;}
+.tog{position:relative;display:inline-block;width:48px;height:26px;}
 .tog input{opacity:0;width:0;height:0;}
-.sli{position:absolute;cursor:pointer;inset:0;background:#1e3a5f;border-radius:28px;transition:.2s;}
-.sli:before{content:'';position:absolute;width:22px;height:22px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.sli{position:absolute;cursor:pointer;inset:0;background:#d1d5db;border-radius:26px;transition:.2s;}
+.sli:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 input:checked+.sli{background:#f97316;}
-input:checked+.sli:before{transform:translateX(24px);}
+input:checked+.sli:before{transform:translateX(22px);}
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
@@ -622,15 +623,15 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
   const existenciaFinal = ins.fin !== null ? ins.fin : (ins.disp - (ins.cons||0));
 
   return (
-    <div style={{background:'#0d1b33',borderRadius:14,
-      border:`1.5px solid ${bajo?'#7f1d1d':ok?'#14532d':'#1a3050'}`,
+    <div style={{background:'#ffffff',borderRadius:14,
+      border:`1.5px solid ${bajo?'#fca5a5':ok?'#86efac':'#e5e7eb'}`,
       padding:'14px',marginBottom:10}}>
 
       {/* Cabecera */}
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
         <div style={{flex:1,paddingRight:8}}>
           <div style={{fontWeight:700,fontSize:15,lineHeight:1.25}}>{ins.nombreCorto}</div>
-          <div style={{fontSize:10,color:'#475569',marginTop:3,fontFamily:'DM Mono,monospace'}}>
+          <div style={{fontSize:10,color:'#9ca3af',marginTop:3,fontFamily:'DM Mono,monospace'}}>
             {ins.codigo} · {ins.unidad} · Rel <span style={{color:tipo==='FS'?'#fb923c':'#93c5fd',fontWeight:700}}>{ins.rel}</span>
           </div>
         </div>
@@ -639,17 +640,17 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
 
       {/* ── FASE: EXISTENCIAS INICIO ── */}
       {fase==='inicio'&&(
-        <div style={{background:'#08101e',borderRadius:10,padding:'12px 14px'}}>
-          <div style={{fontSize:10,fontWeight:700,color:'#94a3b8',marginBottom:8,letterSpacing:.5}}>🌅 EXISTENCIAS INICIO DEL DÍA</div>
+        <div style={{background:'#f9fafb',borderRadius:10,padding:'12px 14px'}}>
+          <div style={{fontSize:10,fontWeight:700,color:'#6b7280',marginBottom:8,letterSpacing:.5}}>🌅 EXISTENCIAS INICIO DEL DÍA</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
             <div>
-              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>CANTIDAD</div>
-              <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:32,color:'#94a3b8',lineHeight:1}}>{fmt2(ins.ini)}</div>
-              <div style={{fontSize:10,color:'#475569',marginTop:2}}>{ins.unidad}</div>
+              <div style={{fontSize:9,color:'#9ca3af',marginBottom:3}}>CANTIDAD</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:32,color:'#6b7280',lineHeight:1}}>{fmt2(ins.ini)}</div>
+              <div style={{fontSize:10,color:'#9ca3af',marginTop:2}}>{ins.unidad}</div>
             </div>
             <div>
-              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>ORIGEN</div>
-              <div style={{fontSize:11,color:'#64748b',lineHeight:1.5}}>
+              <div style={{fontSize:9,color:'#9ca3af',marginBottom:3}}>ORIGEN</div>
+              <div style={{fontSize:11,color:'#6b7280',lineHeight:1.5}}>
                 {ins.ini>0
                   ? <span style={{color:'#4ade80'}}>✓ Conteo final de ayer</span>
                   : <span style={{color:'#f87171'}}>Sin datos de ayer</span>}
@@ -662,10 +663,10 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
       {/* ── FASE: RECIBIDO ── */}
       {fase==='recibido'&&(
         <div>
-          <div style={{background:'#08101e',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
+          <div style={{background:'#f9fafb',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8}}>
             <div style={{textAlign:'center'}}>
-              <div style={{fontSize:8,color:'#475569',marginBottom:2}}>INICIO</div>
-              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:16,color:'#94a3b8'}}>{fmt2(ins.ini)}</div>
+              <div style={{fontSize:8,color:'#9ca3af',marginBottom:2}}>INICIO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:16,color:'#6b7280'}}>{fmt2(ins.ini)}</div>
             </div>
             <div style={{textAlign:'center'}}>
               <div style={{fontSize:8,color:'#60a5fa',marginBottom:2}}>RECIBIDO</div>
@@ -686,7 +687,7 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
                   value={reg.recibido?.[ins.id]??''}
                   onChange={e=>onSet('recibido',ins.id,Math.max(0,parseFloat(e.target.value)||0))}
                   style={{flex:1,height:52,borderRadius:12,border:'2px solid #3b82f6',
-                    background:'#162035',color:'#60a5fa',fontSize:28,fontWeight:800,
+                    background:'#f9fafb',color:'#60a5fa',fontSize:28,fontWeight:800,
                     textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
                   placeholder="0"/>
                 <NumBtn label="+½" onPress={()=>cambiar('recibido',.5)} color="#1e3a5f" textColor="#94a3b8"/>
@@ -700,17 +701,17 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
       {/* ── FASE: CONTEO ── */}
       {fase==='conteo'&&(
         <div>
-          <div style={{background:'#08101e',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
+          <div style={{background:'#f9fafb',borderRadius:10,padding:'10px 12px',marginBottom:10,display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6}}>
             <div style={{textAlign:'center'}}>
-              <div style={{fontSize:8,color:'#475569',marginBottom:2}}>DISPONIBLE</div>
-              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
+              <div style={{fontSize:8,color:'#9ca3af',marginBottom:2}}>DISPONIBLE</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:'#6b7280'}}>{fmt2(ins.disp)}</div>
             </div>
             <div style={{textAlign:'center'}}>
               <div style={{fontSize:8,color:'#fb923c',marginBottom:2}}>CONTEO</div>
               <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:bajo?'#f87171':'#fb923c'}}>{ins.fin!==null?fmt2(ins.fin):'—'}</div>
             </div>
             <div style={{textAlign:'center'}}>
-              <div style={{fontSize:8,color:'#94a3b8',marginBottom:2}}>CONSUMO</div>
+              <div style={{fontSize:8,color:'#6b7280',marginBottom:2}}>CONSUMO</div>
               <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:15,color:ins.cons>0?'#fb923c':'#475569'}}>{ins.cons!==null?fmt2(ins.cons):'—'}</div>
             </div>
           </div>
@@ -724,16 +725,16 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
                   value={reg.conteoFin?.[ins.id]??''}
                   onChange={e=>onSet('conteoFin',ins.id,Math.max(0,parseFloat(e.target.value)||0))}
                   style={{flex:1,height:52,borderRadius:12,border:'2px solid #f97316',
-                    background:'#162035',color:bajo?'#f87171':'#fb923c',fontSize:28,fontWeight:800,
+                    background:'#f9fafb',color:bajo?'#f87171':'#fb923c',fontSize:28,fontWeight:800,
                     textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}
                   placeholder="—"/>
                 <NumBtn label="+½" onPress={()=>cambiar('conteoFin',.5)} color="#1e3a5f" textColor="#94a3b8"/>
                 <NumBtn label="+" onPress={()=>cambiar('conteoFin',1)} color="#c2410c" textColor="#fff"/>
               </div>
               {ins.cons!==null&&(
-                <div style={{marginTop:8,fontSize:11,color:'#64748b',textAlign:'center',fontFamily:'DM Mono,monospace'}}>
+                <div style={{marginTop:8,fontSize:11,color:'#6b7280',textAlign:'center',fontFamily:'DM Mono,monospace'}}>
                   Consumo: <span style={{color:'#fb923c',fontWeight:700}}>{fmt2(ins.cons)} {ins.unidad}</span>
-                  {ins.precio>0&&<span style={{color:'#475569',marginLeft:6}}>· {fmt$(ins.cons*ins.precio)}</span>}
+                  {ins.precio>0&&<span style={{color:'#9ca3af',marginLeft:6}}>· {fmt$(ins.cons*ins.precio)}</span>}
                 </div>
               )}
             </div>
@@ -743,30 +744,30 @@ function InsCard({ins,fase,reg,cerrado,tipo,onSet}){
 
       {/* ── FASE: EXISTENCIAS FINAL / CIERRE ── */}
       {fase==='cierre'&&(
-        <div style={{background:'#0a1a10',borderRadius:10,padding:'12px 14px',border:'1px solid #166534'}}>
+        <div style={{background:'#f0fdf4',borderRadius:10,padding:'12px 14px',border:'1px solid #16a34a'}}>
           <div style={{fontSize:10,fontWeight:700,color:'#4ade80',marginBottom:10,letterSpacing:.5}}>🌙 EXISTENCIAS FINAL DEL DÍA</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:10}}>
-            <div style={{textAlign:'center',background:'#08101e',borderRadius:8,padding:'10px 6px'}}>
-              <div style={{fontSize:9,color:'#475569',marginBottom:3}}>INICIO + RECIBIDO</div>
-              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#94a3b8'}}>{fmt2(ins.disp)}</div>
+            <div style={{textAlign:'center',background:'#f9fafb',borderRadius:8,padding:'10px 6px'}}>
+              <div style={{fontSize:9,color:'#9ca3af',marginBottom:3}}>INICIO + RECIBIDO</div>
+              <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#6b7280'}}>{fmt2(ins.disp)}</div>
             </div>
-            <div style={{textAlign:'center',background:'#08101e',borderRadius:8,padding:'10px 6px'}}>
+            <div style={{textAlign:'center',background:'#f9fafb',borderRadius:8,padding:'10px 6px'}}>
               <div style={{fontSize:9,color:'#fb923c',marginBottom:3}}>CONSUMO</div>
               <div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:18,color:'#fb923c'}}>{ins.cons!==null?fmt2(ins.cons):'—'}</div>
             </div>
           </div>
-          <div style={{textAlign:'center',background:'#0c2a18',borderRadius:10,padding:'12px',border:'1px solid #166534'}}>
+          <div style={{textAlign:'center',background:'#dcfce7',borderRadius:10,padding:'12px',border:'1px solid #16a34a'}}>
             <div style={{fontSize:10,color:'#86efac',marginBottom:4,fontWeight:600}}>EXISTENCIA FINAL → INICIO DE MAÑANA</div>
             <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:36,
               color:ins.fin!==null?'#4ade80':'#475569',lineHeight:1}}>
               {ins.fin!==null?fmt2(ins.fin):'Sin conteo'}
             </div>
-            <div style={{fontSize:10,color:'#475569',marginTop:4}}>{ins.unidad}</div>
+            <div style={{fontSize:10,color:'#9ca3af',marginTop:4}}>{ins.unidad}</div>
           </div>
           {ins.pedir>0&&(
             <div style={{marginTop:10,display:'flex',justifyContent:'space-between',alignItems:'center',
-              background:'#08101e',borderRadius:8,padding:'8px 12px'}}>
-              <div style={{fontSize:11,color:'#64748b'}}>A pedir mañana ({tipo})</div>
+              background:'#f9fafb',borderRadius:8,padding:'8px 12px'}}>
+              <div style={{fontSize:11,color:'#6b7280'}}>A pedir mañana ({tipo})</div>
               <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:20,color:'#4ade80'}}>{ins.pedir} {ins.unidad}</div>
             </div>
           )}
@@ -880,16 +881,35 @@ function App(){
     if(!configOk()){ showToast('⚠️ Configura la URL primero','warn'); return; }
     setSyncing(true);
     try{
-      const res=await apiGet('leerTodos');
-      if(res.ok&&res.registros){
-        // Normalizar claves de fecha
+      // 1. Primero subir todos los registros locales a Sheets
+      const registrosLocales = db.registros || {};
+      let subidos = 0;
+      for(const [fecha, datos] of Object.entries(registrosLocales)){
+        // Solo subir si tiene datos reales
+        const tieneData = Object.keys(datos.recibido||{}).length>0 ||
+                          Object.keys(datos.conteoFin||{}).length>0 ||
+                          Object.keys(datos.stockInicio||{}).length>0;
+        if(!tieneData) continue;
+        try{
+          await apiPost('guardarRegistro',{fecha, datos});
+          subidos++;
+        }catch(e){}
+      }
+
+      // 2. Luego bajar todo de Sheets
+      const res = await apiGet('leerTodos');
+      if(res.ok && res.registros){
         const normalized={};
         Object.entries(res.registros).forEach(([k,v])=>{
           const fechaNorm = normalizarFecha(k);
-          normalized[fechaNorm]=v;
+          // Solo cargar si tiene datos reales
+          const tieneData = Object.keys(v.recibido||{}).length>0 ||
+                            Object.keys(v.conteoFin||{}).length>0 ||
+                            Object.keys(v.stockInicio||{}).length>0;
+          if(tieneData) normalized[fechaNorm]=v;
         });
         setDb(d=>({...d,registros:{...d.registros,...normalized}}));
-        showToast(`✅ ${Object.keys(normalized).length} días sincronizados`);
+        showToast(`✅ ${subidos} subidos · ${Object.keys(normalized).length} días sincronizados`);
         setSyncStatus('ok');
       }
     }catch(e){ showToast('❌ Error al sincronizar','err'); setSyncStatus('error'); }
@@ -953,6 +973,12 @@ function App(){
     }}}));
     showToast('✅ Día cerrado — remisión generada');
     setFase('cierre'); setShowCierre(false);
+  };
+
+  const reabrirDia=()=>{
+    setDb(d=>({...d,registros:{...d.registros,[fecha]:{...d.registros[fecha],cerrado:false}}}));
+    showToast('🔓 Día reabierto — edita y vuelve a cerrar');
+    setFase('recibido');
   };
 
   const guardarEdit=()=>{
@@ -1032,10 +1058,10 @@ function App(){
     const hoy = new Date().getDay(); // 0=Dom,1=Lun,...,6=Sáb
     const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
     return (
-      <div style={{minHeight:'100dvh',background:'#08101e',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px'}}>
-        <div style={{width:64,height:64,borderRadius:16,background:'linear-gradient(135deg,#3b82f6,#1d4ed8)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,marginBottom:16}}>❄️</div>
-        <div style={{fontWeight:800,fontSize:22,color:'#e2ecf8',marginBottom:4}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
-        <div style={{fontSize:12,color:'#475569',marginBottom:32,fontFamily:'DM Mono,monospace'}}>SUCURSAL XOXO · {DIAS[hoy]} {diaCorto(HOY)}</div>
+      <div style={{minHeight:'100dvh',background:'#f9fafb',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 20px'}}>
+        <div style={{width:64,height:64,borderRadius:16,background:'#2563eb',display:'flex',alignItems:'center',justifyContent:'center',fontSize:32,marginBottom:16}}>❄️</div>
+        <div style={{fontWeight:800,fontSize:22,color:'#111827',marginBottom:4}}>RellenApp <span style={{color:'#60a5fa'}}>XOXO</span></div>
+        <div style={{fontSize:12,color:'#9ca3af',marginBottom:32,fontFamily:'DM Mono,monospace'}}>SUCURSAL XOXO · {DIAS[hoy]} {diaCorto(HOY)}</div>
 
         <div style={{width:'100%',maxWidth:400,display:'flex',flexDirection:'column',gap:14}}>
           {RUTAS_CONFIG.map(ruta=>{
@@ -1054,19 +1080,19 @@ function App(){
                   {ruta.emoji}
                 </div>
                 <div style={{flex:1}}>
-                  <div style={{fontWeight:800,fontSize:16,color:'#e2ecf8',marginBottom:2}}>{ruta.nombre}</div>
-                  <div style={{fontSize:11,color:'#64748b'}}>{ruta.descripcion}</div>
+                  <div style={{fontWeight:800,fontSize:16,color:'#111827',marginBottom:2}}>{ruta.nombre}</div>
+                  <div style={{fontSize:11,color:'#6b7280'}}>{ruta.descripcion}</div>
                   <div style={{fontSize:10,marginTop:4,fontFamily:'DM Mono,monospace',
-                    color:esDiaActivo?ruta.color:'#475569',fontWeight:600}}>
+                    color:esDiaActivo?ruta.color:'#9ca3af',fontWeight:600}}>
                     {esDiaActivo?'● Pedido hoy':'○ '+diasNombre}
                   </div>
                 </div>
-                <div style={{fontSize:22,color:esDiaActivo?ruta.color:'#475569'}}>›</div>
+                <div style={{fontSize:22,color:esDiaActivo?ruta.color:'#9ca3af'}}>›</div>
               </button>
             );
           })}
         </div>
-        <div style={{marginTop:24,fontSize:10,color:'#475569',textAlign:'center'}}>
+        <div style={{marginTop:24,fontSize:10,color:'#9ca3af',textAlign:'center'}}>
           Las rutas sin pedido hoy se muestran atenuadas<br/>pero puedes entrar igualmente
         </div>
       </div>
@@ -1074,11 +1100,11 @@ function App(){
   }
 
   return (
-    <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#08101e',overflow:'hidden'}}>
+    <div style={{height:'100dvh',display:'flex',flexDirection:'column',background:'#f9fafb',overflow:'hidden'}}>
 
       {/* TOAST */}
       {toast&&<div style={{position:'fixed',top:16,left:'50%',transform:'translateX(-50%)',zIndex:9999,
-        background:toast.t==='ok'?'#14532d':toast.t==='warn'?'#78350f':'#7f1d1d',
+        background:toast.t==='ok'?'#16a34a':toast.t==='warn'?'#d97706':'#dc2626',
         color:'#fff',padding:'12px 22px',borderRadius:14,fontWeight:700,fontSize:14,
         boxShadow:'0 6px 28px rgba(0,0,0,.6)',maxWidth:'88vw',textAlign:'center'}}>
         {toast.msg}
@@ -1090,23 +1116,23 @@ function App(){
       {/* MODAL EDITAR INSUMO */}
       {modEdit&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:1000,display:'flex',alignItems:'flex-end'}}>
-          <div style={{background:'#0d1b33',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',
-            width:'100%',border:'1px solid #1a3050',maxHeight:'80vh',overflowY:'auto'}}>
+          <div style={{background:'#ffffff',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',
+            width:'100%',border:'1px solid #e5e7eb',maxHeight:'80vh',overflowY:'auto'}}>
             <div style={{fontWeight:800,fontSize:16,color:'#60a5fa',marginBottom:2}}>✏️ Editar insumo</div>
-            <div style={{fontSize:11,color:'#475569',marginBottom:20,fontFamily:'DM Mono,monospace'}}>{formEdit.codigo} · {formEdit.nombre}</div>
+            <div style={{fontSize:11,color:'#9ca3af',marginBottom:20,fontFamily:'DM Mono,monospace'}}>{formEdit.codigo} · {formEdit.nombre}</div>
             {[['precio','Precio unitario ($)'],['stockES','Rellenable Entre Semana'],['stockFS','Rellenable Fin de Semana']].map(([k,l])=>(
               <div key={k} style={{marginBottom:16}}>
-                <div style={{fontSize:12,color:'#64748b',marginBottom:6,fontWeight:600}}>{l}</div>
+                <div style={{fontSize:12,color:'#6b7280',marginBottom:6,fontWeight:600}}>{l}</div>
                 <input type="number" inputMode="decimal" step="0.01" value={formEdit[k]??0}
                   onChange={e=>setFormEdit(f=>({...f,[k]:e.target.value}))}
-                  style={{width:'100%',height:56,borderRadius:12,border:'2px solid #1e3a5f',
-                    background:'#162035',color:'#e2ecf8',fontSize:24,fontWeight:700,
+                  style={{width:'100%',height:56,borderRadius:12,border:'2px solid #e5e7eb',
+                    background:'#f9fafb',color:'#111827',fontSize:24,fontWeight:700,
                     textAlign:'center',fontFamily:'DM Mono,monospace',padding:0}}/>
               </div>
             ))}
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginTop:8}}>
               <button onClick={guardarEdit} style={{height:54,borderRadius:14,border:'none',background:'#3b82f6',color:'#fff',fontSize:16,fontWeight:800}}>💾 Guardar</button>
-              <button onClick={()=>setModEdit(null)} style={{height:54,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:16,fontWeight:700}}>Cancelar</button>
+              <button onClick={()=>setModEdit(null)} style={{height:54,borderRadius:14,border:'2px solid #e5e7eb',background:'transparent',color:'#6b7280',fontSize:16,fontWeight:700}}>Cancelar</button>
             </div>
           </div>
         </div>
@@ -1115,16 +1141,16 @@ function App(){
       {/* MODAL CERRAR DÍA */}
       {showCierre&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.85)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-          <div style={{background:'#0d1b33',borderRadius:20,padding:24,width:'100%',maxWidth:360,border:'1px solid #1a3050'}}>
+          <div style={{background:'#ffffff',borderRadius:20,padding:24,width:'100%',maxWidth:360,border:'1px solid #e5e7eb'}}>
             <div style={{fontSize:36,marginBottom:12,textAlign:'center'}}>🔒</div>
             <div style={{fontWeight:800,fontSize:18,marginBottom:8,textAlign:'center'}}>¿Cerrar el día?</div>
-            <div style={{fontSize:13,color:'#94a3b8',marginBottom:24,textAlign:'center',lineHeight:1.6}}>
+            <div style={{fontSize:13,color:'#6b7280',marginBottom:24,textAlign:'center',lineHeight:1.6}}>
               {sinConteo>0?`Faltan ${sinConteo} insumo(s) sin conteo. `:'Todos los insumos tienen conteo. '}
               Al cerrar se genera el pedido de mañana y el día queda bloqueado.
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
               <button onClick={cerrarDia} style={{height:56,borderRadius:14,border:'none',background:'#14532d',color:'#86efac',fontSize:16,fontWeight:800}}>✅ Cerrar</button>
-              <button onClick={()=>setShowCierre(false)} style={{height:56,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:16,fontWeight:700}}>Cancelar</button>
+              <button onClick={()=>setShowCierre(false)} style={{height:56,borderRadius:14,border:'2px solid #e5e7eb',background:'transparent',color:'#6b7280',fontSize:16,fontWeight:700}}>Cancelar</button>
             </div>
           </div>
         </div>
@@ -1133,33 +1159,33 @@ function App(){
       {/* MODAL CONFIGURAR URL */}
       {showConfig&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.9)',zIndex:1000,display:'flex',alignItems:'flex-end'}}>
-          <div style={{background:'#0d1b33',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',width:'100%',border:'1px solid #1a3050'}}>
+          <div style={{background:'#ffffff',borderRadius:'20px 20px 0 0',padding:'24px 20px 40px',width:'100%',border:'1px solid #e5e7eb'}}>
             <div style={{fontWeight:800,fontSize:16,color:'#60a5fa',marginBottom:8}}>🔗 Conectar con Google Sheets</div>
-            <div style={{fontSize:12,color:'#94a3b8',lineHeight:1.6,marginBottom:20}}>
+            <div style={{fontSize:12,color:'#6b7280',lineHeight:1.6,marginBottom:20}}>
               Pega aquí la URL de tu Google Apps Script para que los datos se guarden en la nube y puedas acceder desde cualquier dispositivo.
             </div>
-            <div style={{fontSize:11,color:'#64748b',marginBottom:6,fontWeight:600}}>URL DEL APPS SCRIPT</div>
+            <div style={{fontSize:11,color:'#6b7280',marginBottom:6,fontWeight:600}}>URL DEL APPS SCRIPT</div>
             <input value={scriptUrlInput} onChange={e=>setScriptUrlInput(e.target.value)}
               placeholder="https://script.google.com/macros/s/.../exec"
-              style={{width:'100%',height:52,borderRadius:12,border:'2px solid #1e3a5f',
-                background:'#162035',color:'#e2ecf8',fontSize:13,padding:'0 14px',marginBottom:20,
+              style={{width:'100%',height:52,borderRadius:12,border:'2px solid #e5e7eb',
+                background:'#f9fafb',color:'#111827',fontSize:13,padding:'0 14px',marginBottom:20,
                 fontFamily:'DM Mono,monospace'}}/>
-            <div style={{background:'#08101e',borderRadius:12,padding:'12px 14px',marginBottom:20,border:'1px solid #1a3050'}}>
+            <div style={{background:'#f9fafb',borderRadius:12,padding:'12px 14px',marginBottom:20,border:'1px solid #e5e7eb'}}>
               <div style={{fontWeight:700,fontSize:12,color:'#fbbf24',marginBottom:6}}>📋 Pasos para obtener tu URL:</div>
               {['1. Abre tu Google Sheet','2. Ve a Extensiones → Apps Script','3. Pega el código del archivo RellenApp_Script.gs','4. Haz clic en Implementar → Nueva implementación','5. Tipo: "Aplicación web" · Acceso: "Cualquier persona"','6. Copia la URL que aparece y pégala aquí'].map((s,i)=>(
-                <div key={i} style={{fontSize:11,color:'#94a3b8',marginBottom:4}}>{s}</div>
+                <div key={i} style={{fontSize:11,color:'#6b7280',marginBottom:4}}>{s}</div>
               ))}
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
               <button onClick={guardarScriptUrl} style={{height:54,borderRadius:14,border:'none',background:'#3b82f6',color:'#fff',fontSize:15,fontWeight:800}}>💾 Guardar URL</button>
-              <button onClick={()=>setShowConfig(false)} style={{height:54,borderRadius:14,border:'2px solid #1e3a5f',background:'transparent',color:'#64748b',fontSize:15,fontWeight:700}}>Cancelar</button>
+              <button onClick={()=>setShowConfig(false)} style={{height:54,borderRadius:14,border:'2px solid #e5e7eb',background:'transparent',color:'#6b7280',fontSize:15,fontWeight:700}}>Cancelar</button>
             </div>
           </div>
         </div>
       )}
 
       {/* HEADER */}
-      <div style={{background:'linear-gradient(180deg,#0d1f38,#0a1628)',borderBottom:'1px solid #1a3050',padding:'12px 16px 10px',flexShrink:0}}>
+      <div style={{background:'#ffffff',borderBottom:'1px solid #1a3050',padding:'12px 16px 10px',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <button onClick={()=>setRutaId(null)}
@@ -1168,10 +1194,10 @@ function App(){
             </button>
             <div>
               <div style={{fontWeight:800,fontSize:16,lineHeight:1}}>RellenApp <span style={{color:rutaConfig?rutaConfig.color:'#60a5fa'}}>XOXO</span></div>
-              <div style={{fontSize:10,color:'#64748b',marginBottom:1}}>{rutaConfig?.nombre||'Ruta Fría'}</div>
+              <div style={{fontSize:10,color:'#6b7280',marginBottom:1}}>{rutaConfig?.nombre||'Ruta Fría'}</div>
               <div style={{display:'flex',alignItems:'center',gap:5}}>
                 <SyncDot/>
-                <span style={{fontSize:9,color:'#475569'}}>
+                <span style={{fontSize:9,color:'#9ca3af'}}>
                   {syncing?'Sincronizando...':syncStatus==='ok'?'Sincronizado ✓':configOk()?'Sin conexión':'Sin configurar'}
                 </span>
               </div>
@@ -1180,12 +1206,12 @@ function App(){
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
             {configOk()&&(
               <button onClick={cargarTodo}
-                style={{width:36,height:36,borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                style={{width:36,height:36,borderRadius:10,border:'1px solid #e5e7eb',background:'#f9fafb',color:'#60a5fa',fontSize:18,display:'flex',alignItems:'center',justifyContent:'center'}}>
                 <span className={syncing?'spin':''}>🔄</span>
               </button>
             )}
             <button onClick={()=>setShowDatePick(p=>!p)}
-              style={{background:'#162035',border:'1px solid #1e3a5f',borderRadius:10,padding:'7px 12px',color:'#93c5fd',fontSize:12,fontWeight:700}}>
+              style={{background:'#f9fafb',border:'1px solid #e5e7eb',borderRadius:10,padding:'7px 12px',color:'#93c5fd',fontSize:12,fontWeight:700}}>
               📅 {diaCorto(fecha)}
             </button>
           </div>
@@ -1194,8 +1220,8 @@ function App(){
         {showDatePick&&(
           <div style={{marginBottom:8}}>
             <input type="date" value={fecha} onChange={e=>{setFecha(e.target.value);setShowDatePick(false);}}
-              style={{width:'100%',height:48,borderRadius:12,border:'2px solid #3b82f6',background:'#162035',
-                color:'#e2ecf8',fontSize:16,textAlign:'center',fontFamily:'DM Mono,monospace',padding:'0 12px'}}/>
+              style={{width:'100%',height:48,borderRadius:12,border:'2px solid #3b82f6',background:'#f9fafb',
+                color:'#111827',fontSize:16,textAlign:'center',fontFamily:'DM Mono,monospace',padding:'0 12px'}}/>
           </div>
         )}
 
@@ -1205,8 +1231,8 @@ function App(){
             background:cerrado?'#14532d':'#162035',color:cerrado?'#86efac':'#60a5fa'}}>
             {cerrado?'🔒':'🟢'} {cerrado?'CERRADO':'ABIERTO'}
           </div>
-          <div style={{flex:1,display:'flex',alignItems:'center',gap:7,background:'#0a1628',
-            borderRadius:10,padding:'6px 10px',border:'1px solid #1a3050',justifyContent:'center'}}>
+          <div style={{flex:1,display:'flex',alignItems:'center',gap:7,background:'#f3f4f6',
+            borderRadius:10,padding:'6px 10px',border:'1px solid #e5e7eb',justifyContent:'center'}}>
             <span style={{fontSize:11,fontWeight:700,color:tipo==='ES'?'#93c5fd':'#475569'}}>ES</span>
             <label className="tog">
               <input type="checkbox" checked={tipo==='FS'} onChange={e=>setOverride(e.target.checked?'FS':'ES')}/>
@@ -1217,13 +1243,13 @@ function App(){
               {tipo==='FS'?'🍊 FIN SEMANA':'📘 ENTRE SEMANA'}
               {ovRel===null&&<span style={{fontSize:8,opacity:.5}}> auto</span>}
             </span>
-            {ovRel!==null&&<button onClick={()=>setOverride(null)} style={{fontSize:9,color:'#64748b',background:'none',border:'none',textDecoration:'underline'}}>auto</button>}
+            {ovRel!==null&&<button onClick={()=>setOverride(null)} style={{fontSize:9,color:'#6b7280',background:'none',border:'none',textDecoration:'underline'}}>auto</button>}
           </div>
         </div>
       </div>
 
       {/* NAV BOTTOM */}
-      <div style={{order:10,background:'#0d1b33',borderTop:'1px solid #1a3050',display:'flex',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
+      <div style={{order:10,background:'#ffffff',borderTop:'1px solid #1a3050',display:'flex',flexShrink:0,paddingBottom:'env(safe-area-inset-bottom,0px)'}}>
         {NAV.map(n=>(
           <button key={n.id} onClick={()=>setVista(n.id)}
             style={{flex:1,padding:'10px 4px 8px',border:'none',background:'transparent',
@@ -1243,7 +1269,7 @@ function App(){
           <div className="fu">
             {/* Banner configuración si no hay URL */}
             {!configOk()&&(
-              <div style={{background:'#1c1700',border:'1px solid #f59e0b',borderRadius:14,padding:'14px',marginBottom:14}}>
+              <div style={{background:'#fffbeb',border:'1px solid #f59e0b',borderRadius:14,padding:'14px',marginBottom:14}}>
                 <div style={{fontWeight:700,fontSize:13,color:'#fbbf24',marginBottom:4}}>⚠️ Sin sincronización con Google Sheets</div>
                 <div style={{fontSize:11,color:'#d97706',lineHeight:1.5,marginBottom:10}}>
                   Los datos se guardan solo en este dispositivo. Para sincronizar entre celular y computadora, configura tu Apps Script.
@@ -1258,9 +1284,9 @@ function App(){
             {/* KPIs */}
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:14}}>
               {[[conConteo+'/'+calc.length,'Conteos','#3b82f6'],[alertas||'—','Alertas',alertas?'#ef4444':'#1e3a5f'],[totalPedir,'A pedir','#22c55e'],[costoPedir>0?'$'+Math.round(costoPedir):'—','Costo','#f97316']].map(([v,l,c])=>(
-                <div key={l} style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'10px 4px',textAlign:'center'}}>
+                <div key={l} style={{background:'#ffffff',borderRadius:12,border:'1px solid #e5e7eb',padding:'10px 4px',textAlign:'center'}}>
                   <div style={{fontWeight:800,fontSize:13,color:c,fontFamily:'DM Mono,monospace'}}>{v}</div>
-                  <div style={{fontSize:8,color:'#475569',marginTop:2}}>{l}</div>
+                  <div style={{fontSize:8,color:'#9ca3af',marginTop:2}}>{l}</div>
                 </div>
               ))}
             </div>
@@ -1282,7 +1308,7 @@ function App(){
             </div>
 
             {/* REMISIONES PDF */}
-            <div style={{background:'#0a1020',border:'1px solid #3b82f6',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
+            <div style={{background:'#eff6ff',border:'1px solid #3b82f6',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
                 <div style={{fontWeight:700,fontSize:12,color:'#60a5fa'}}>📄 Remisiones PDF</div>
                 {remisiones.length>0&&<button onClick={()=>setShowRemisiones(p=>!p)} style={{fontSize:10,color:'#60a5fa',background:'none',border:'none',textDecoration:'underline'}}>{showRemisiones?'Ocultar':'Ver detalle'} ({remisiones.length})</button>}
@@ -1301,16 +1327,16 @@ function App(){
               {showRemisiones&&remisiones.length>0&&(
                 <div style={{marginTop:10,borderTop:'1px solid #1e3a5f',paddingTop:10}}>
                   {remisiones.map((r,i)=>(
-                    <div key={i} style={{marginBottom:8,background:'#162035',borderRadius:8,padding:'8px 10px'}}>
+                    <div key={i} style={{marginBottom:8,background:'#f9fafb',borderRadius:8,padding:'8px 10px'}}>
                       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
                         <div style={{fontSize:11,fontWeight:700,color:'#60a5fa'}}>{r.tipo||'Doc'} · {r.nombre}</div>
-                        <div style={{fontSize:10,color:'#475569'}}>{r.fecha} · {r.items} insumos</div>
+                        <div style={{fontSize:10,color:'#9ca3af'}}>{r.fecha} · {r.items} insumos</div>
                       </div>
                       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
                         {Object.entries(r.data).map(([id,cant])=>{
                           const ins=INSUMOS_BASE.find(x=>x.id===+id);
                           return ins?(
-                            <span key={id} style={{padding:'2px 7px',borderRadius:10,fontSize:10,background:'#1e3a5f',color:'#93c5fd'}}>
+                            <span key={id} style={{padding:'2px 7px',borderRadius:10,fontSize:10,background:'#e5e7eb',color:'#93c5fd'}}>
                               {ins.nombreCorto}: +{fmt2(cant)}
                             </span>
                           ):null;
@@ -1323,7 +1349,7 @@ function App(){
             </div>
 
             {/* Importar Excel */}
-            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
+            <div style={{background:'#f0fdf4',border:'1px solid #16a34a',borderRadius:14,padding:'12px 14px',marginBottom:12}}>
               <div style={{fontWeight:700,fontSize:12,color:'#4ade80',marginBottom:6}}>📊 Importar existencias desde Excel</div>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                 <button onClick={handleExportar} style={{height:48,borderRadius:12,border:'none',background:'#166534',color:'#fff',fontSize:13,fontWeight:700}}>📥 Exportar</button>
@@ -1337,11 +1363,12 @@ function App(){
             </div>
 
             {/* Cerrar día */}
-            {!cerrado&&<button onClick={()=>setShowCierre(true)} style={{width:'100%',height:52,borderRadius:14,border:'2px solid #166534',background:'#0a1a10',color:'#86efac',fontSize:15,fontWeight:800,marginBottom:8}}>🔒 Cerrar día y generar remisión</button>}
+            {!cerrado&&<button onClick={()=>setShowCierre(true)} style={{width:'100%',height:52,borderRadius:14,border:'2px solid #16a34a',background:'#f0fdf4',color:'#15803d',fontSize:15,fontWeight:800,marginBottom:8}}>🔒 Cerrar día y generar remisión</button>}
+          {cerrado&&<button onClick={reabrirDia} style={{width:'100%',height:44,borderRadius:12,border:'2px solid #f59e0b',background:'#fffbeb',color:'#b45309',fontSize:13,fontWeight:700,marginBottom:8}}>🔓 Reabrir día para editar</button>}
           {cerrado&&reg.remision&&(
             <button onClick={()=>setVista('remision')}
-              style={{width:'100%',height:48,borderRadius:14,border:'2px solid #166534',
-                background:'#0a1a10',color:'#4ade80',fontSize:14,fontWeight:700,marginBottom:8,
+              style={{width:'100%',height:48,borderRadius:14,border:'2px solid #16a34a',
+                background:'#f0fdf4',color:'#4ade80',fontSize:14,fontWeight:700,marginBottom:8,
                 display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
               📄 Ver remisión del día
             </button>
@@ -1349,7 +1376,7 @@ function App(){
 
             {/* Búsqueda */}
             <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar insumo..." inputMode="search"
-              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:15,padding:'0 16px',marginBottom:12}}/>
+              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #e5e7eb',background:'#ffffff',color:'#111827',fontSize:15,padding:'0 16px',marginBottom:12}}/>
 
             {filtrado.map(ins=><InsCard key={ins.id} ins={ins} fase={fase} reg={reg} cerrado={cerrado} tipo={tipo} onSet={setVal}/>)}
           </div>
@@ -1366,29 +1393,29 @@ function App(){
               {tipo==='FS'?'🍊 Rellenable FIN DE SEMANA':'📘 Rellenable ENTRE SEMANA'} · {diaCorto(fecha)}
             </div>
             {calc.filter(i=>i.pedir>0).map(ins=>(
-              <div key={ins.id} style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:8,display:'flex',alignItems:'center',gap:14}}>
+              <div key={ins.id} style={{background:'#ffffff',borderRadius:14,border:'1px solid #e5e7eb',padding:'14px',marginBottom:8,display:'flex',alignItems:'center',gap:14}}>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:700,fontSize:14}}>{ins.nombreCorto}</div>
-                  <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>{ins.codigo} · Exist:{fmt2(ins.fin??ins.ini)} → Rel:{ins.rel}</div>
+                  <div style={{fontSize:10,color:'#9ca3af',fontFamily:'DM Mono,monospace',marginTop:2}}>{ins.codigo} · Exist:{fmt2(ins.fin??ins.ini)} → Rel:{ins.rel}</div>
                 </div>
                 <div style={{textAlign:'center',minWidth:60}}>
                   <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:32,color:'#4ade80',lineHeight:1}}>{ins.pedir}</div>
-                  <div style={{fontSize:10,color:'#475569'}}>{ins.unidad}</div>
+                  <div style={{fontSize:10,color:'#9ca3af'}}>{ins.unidad}</div>
                   <div style={{fontSize:11,color:'#f97316',fontFamily:'DM Mono,monospace',marginTop:2}}>{ins.precio>0?fmt$(ins.pedir*ins.precio):'—'}</div>
                 </div>
               </div>
             ))}
-            <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:14,padding:'16px',marginTop:8}}>
+            <div style={{background:'#f0fdf4',border:'1px solid #16a34a',borderRadius:14,padding:'16px',marginTop:8}}>
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#475569',marginBottom:4}}>PIEZAS A PEDIR</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:34,color:'#4ade80'}}>{totalPedir}</div></div>
-                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#475569',marginBottom:4}}>COSTO ESTIMADO</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:20,color:'#f97316',marginTop:4}}>{costoPedir>0?fmt$(costoPedir):'—'}</div></div>
+                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#9ca3af',marginBottom:4}}>PIEZAS A PEDIR</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:34,color:'#4ade80'}}>{totalPedir}</div></div>
+                <div style={{textAlign:'center'}}><div style={{fontSize:11,color:'#9ca3af',marginBottom:4}}>COSTO ESTIMADO</div><div style={{fontFamily:'DM Mono,monospace',fontWeight:700,fontSize:20,color:'#f97316',marginTop:4}}>{costoPedir>0?fmt$(costoPedir):'—'}</div></div>
               </div>
             </div>
             {calc.filter(i=>i.pedir===0).length>0&&(
-              <div style={{marginTop:10,background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px 14px'}}>
-                <div style={{fontSize:11,color:'#475569',marginBottom:8}}>✅ Stock suficiente — no pedir:</div>
+              <div style={{marginTop:10,background:'#ffffff',borderRadius:12,border:'1px solid #e5e7eb',padding:'12px 14px'}}>
+                <div style={{fontSize:11,color:'#9ca3af',marginBottom:8}}>✅ Stock suficiente — no pedir:</div>
                 <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
-                  {calc.filter(i=>i.pedir===0).map(i=><span key={i.id} style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,background:'#0c2340',color:'#4ade80'}}>{i.nombreCorto}</span>)}
+                  {calc.filter(i=>i.pedir===0).map(i=><span key={i.id} style={{padding:'4px 10px',borderRadius:20,fontSize:11,fontWeight:600,background:'#dbeafe',color:'#4ade80'}}>{i.nombreCorto}</span>)}
                 </div>
               </div>
             )}
@@ -1401,7 +1428,7 @@ function App(){
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
             <div>
               <div style={{fontWeight:800,fontSize:17,color:'#4ade80'}}>📄 Remisión del día</div>
-              <div style={{fontSize:11,color:'#475569',marginTop:2,fontFamily:'DM Mono,monospace'}}>{diaNombre(fecha)}</div>
+              <div style={{fontSize:11,color:'#9ca3af',marginTop:2,fontFamily:'DM Mono,monospace'}}>{diaNombre(fecha)}</div>
             </div>
             <button onClick={()=>exportarRemision(fecha,reg.remision,rutaConfig?.nombre)}
               disabled={!reg.remision}
@@ -1413,10 +1440,10 @@ function App(){
           </div>
 
           {!reg.remision?(
-            <div style={{background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:24,textAlign:'center'}}>
+            <div style={{background:'#ffffff',borderRadius:14,border:'1px solid #e5e7eb',padding:24,textAlign:'center'}}>
               <div style={{fontSize:32,marginBottom:12}}>📋</div>
-              <div style={{fontWeight:700,fontSize:14,color:'#64748b',marginBottom:6}}>Sin remisión para este día</div>
-              <div style={{fontSize:12,color:'#475569',lineHeight:1.5,marginBottom:16}}>
+              <div style={{fontWeight:700,fontSize:14,color:'#6b7280',marginBottom:6}}>Sin remisión para este día</div>
+              <div style={{fontSize:12,color:'#9ca3af',lineHeight:1.5,marginBottom:16}}>
                 La remisión se genera automáticamente al cerrar el día.<br/>
                 {!cerrado&&'Cierra el día para generarla.'}
               </div>
@@ -1440,7 +1467,7 @@ function App(){
                   showToast('✅ Remisión generada desde el recibido');
                 }}
                 style={{width:'100%',height:48,borderRadius:12,border:'2px solid #3b82f6',
-                  background:'#162035',color:'#60a5fa',fontSize:14,fontWeight:700}}>
+                  background:'#f9fafb',color:'#60a5fa',fontSize:14,fontWeight:700}}>
                   📄 Generar remisión desde recibido
                 </button>
               )}
@@ -1449,12 +1476,12 @@ function App(){
             <div>
               {/* Resumen */}
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
-                <div style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px',textAlign:'center'}}>
-                  <div style={{fontSize:10,color:'#475569',marginBottom:4}}>INSUMOS</div>
+                <div style={{background:'#ffffff',borderRadius:12,border:'1px solid #e5e7eb',padding:'12px',textAlign:'center'}}>
+                  <div style={{fontSize:10,color:'#9ca3af',marginBottom:4}}>INSUMOS</div>
                   <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:24,color:'#4ade80'}}>{reg.remision.items.length}</div>
                 </div>
-                <div style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',padding:'12px',textAlign:'center'}}>
-                  <div style={{fontSize:10,color:'#475569',marginBottom:4}}>COSTO TOTAL</div>
+                <div style={{background:'#ffffff',borderRadius:12,border:'1px solid #e5e7eb',padding:'12px',textAlign:'center'}}>
+                  <div style={{fontSize:10,color:'#9ca3af',marginBottom:4}}>COSTO TOTAL</div>
                   <div style={{fontFamily:'DM Mono,monospace',fontWeight:800,fontSize:18,color:'#f97316',marginTop:2}}>
                     {reg.remision.total>0?fmt$(reg.remision.total):'Sin precios'}
                   </div>
@@ -1463,11 +1490,11 @@ function App(){
 
               {/* Lista de insumos */}
               {reg.remision.items.map((item,i)=>(
-                <div key={i} style={{background:'#0d1b33',borderRadius:12,border:'1px solid #1a3050',
+                <div key={i} style={{background:'#ffffff',borderRadius:12,border:'1px solid #e5e7eb',
                   padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'center',gap:12}}>
                   <div style={{flex:1}}>
                     <div style={{fontWeight:600,fontSize:13}}>{item.nombreCorto||item.nombre}</div>
-                    <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>
+                    <div style={{fontSize:10,color:'#9ca3af',fontFamily:'DM Mono,monospace',marginTop:2}}>
                       {item.codigo} · {item.unidad} · {fmt$(item.precio)}
                     </div>
                   </div>
@@ -1480,14 +1507,14 @@ function App(){
                 </div>
               ))}
 
-              <div style={{background:'#0a1a10',border:'1px solid #166534',borderRadius:12,padding:'14px',marginTop:4}}>
+              <div style={{background:'#f0fdf4',border:'1px solid #16a34a',borderRadius:12,padding:'14px',marginTop:4}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                   <div style={{fontWeight:700,fontSize:13,color:'#4ade80'}}>TOTAL DEL DÍA</div>
                   <div style={{fontFamily:'DM Mono,monospace',fontWeight:900,fontSize:22,color:'#f97316'}}>
                     {reg.remision.total>0?fmt$(reg.remision.total):'—'}
                   </div>
                 </div>
-                <div style={{fontSize:9,color:'#475569',marginTop:4,fontFamily:'DM Mono,monospace'}}>
+                <div style={{fontSize:9,color:'#9ca3af',marginTop:4,fontFamily:'DM Mono,monospace'}}>
                   Generada: {new Date(reg.remision.generada||Date.now()).toLocaleString('es-MX')}
                 </div>
               </div>
@@ -1503,10 +1530,10 @@ function App(){
               <div style={{fontWeight:800,fontSize:17,color:'#60a5fa'}}>📊 Historial</div>
               <div style={{display:'flex',gap:8}}>
                 <button onClick={()=>exportarReporteSemanal(db.registros,INSUMOS,rutaConfig?.nombre)}
-                  style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #166534',background:'#0a1a10',color:'#4ade80',fontSize:11,fontWeight:700}}>
+                  style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #16a34a',background:'#f0fdf4',color:'#4ade80',fontSize:11,fontWeight:700}}>
                   📈 Reporte semanal
                 </button>
-                {configOk()&&<button onClick={cargarTodo} style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #1e3a5f',background:'#162035',color:'#60a5fa',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',gap:4}}><span className={syncing?'spin':''}>🔄</span></button>}
+                {configOk()&&<button onClick={cargarTodo} style={{height:38,padding:'0 12px',borderRadius:10,border:'1px solid #e5e7eb',background:'#f9fafb',color:'#60a5fa',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',gap:4}}><span className={syncing?'spin':''}>🔄</span></button>}
               </div>
             </div>
             {Object.entries(db.registros).sort(([a],[b])=>b.localeCompare(a)).map(([f,r])=>{
@@ -1517,29 +1544,29 @@ function App(){
               const tCosto=c.reduce((s,i)=>s+i.pedir*i.precio,0);
               return (
                 <button key={f} onClick={()=>{setFecha(f);setVista(r.remision?'remision':'dia');}}
-                  style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:10,textAlign:'left'}}>
+                  style={{width:'100%',background:'#ffffff',borderRadius:14,border:'1px solid #e5e7eb',padding:'14px',marginBottom:10,textAlign:'left'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
                     <div>
                       <div style={{fontWeight:700,fontSize:14,textTransform:'capitalize'}}>{diaNombre(f)}</div>
-                      <div style={{fontSize:10,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:2}}>{f} · {tr==='FS'?'🍊 FS':'📘 ES'}</div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontFamily:'DM Mono,monospace',marginTop:2}}>{f} · {tr==='FS'?'🍊 FS':'📘 ES'}</div>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4}}>
                       <div style={{padding:'4px 10px',borderRadius:10,fontSize:11,fontWeight:700,background:r.cerrado?'#14532d':'#162035',color:r.cerrado?'#86efac':'#60a5fa'}}>{r.cerrado?'🔒 Cerrado':'🟢 Abierto'}</div>
-                      {r.remision&&<div style={{padding:'2px 8px',borderRadius:8,fontSize:9,fontWeight:700,background:'#0c2a18',color:'#4ade80'}}>📄 Remisión</div>}
+                      {r.remision&&<div style={{padding:'2px 8px',borderRadius:8,fontSize:9,fontWeight:700,background:'#dcfce7',color:'#4ade80'}}>📄 Remisión</div>}
                     </div>
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
                     {[[nC+'/'+c.length,'Conteos','#3b82f6'],[tP,'A pedir','#22c55e'],[tCosto>0?'$'+Math.round(tCosto):'—','Costo','#f97316']].map(([v,l,col])=>(
-                      <div key={l} style={{background:'#08101e',borderRadius:8,padding:'8px 4px',textAlign:'center'}}>
+                      <div key={l} style={{background:'#f9fafb',borderRadius:8,padding:'8px 4px',textAlign:'center'}}>
                         <div style={{fontWeight:800,fontSize:13,color:col,fontFamily:'DM Mono,monospace'}}>{v}</div>
-                        <div style={{fontSize:9,color:'#475569',marginTop:2}}>{l}</div>
+                        <div style={{fontSize:9,color:'#9ca3af',marginTop:2}}>{l}</div>
                       </div>
                     ))}
                   </div>
                 </button>
               );
             })}
-            {!Object.keys(db.registros).length&&<div style={{textAlign:'center',color:'#475569',padding:48,fontSize:14}}>Sin historial aún.</div>}
+            {!Object.keys(db.registros).length&&<div style={{textAlign:'center',color:'#9ca3af',padding:48,fontSize:14}}>Sin historial aún.</div>}
           </div>
         )}
 
@@ -1549,11 +1576,11 @@ function App(){
             <div style={{fontWeight:800,fontSize:17,color:'#60a5fa',marginBottom:14}}>⚙️ Configuración</div>
 
             {/* Google Sheets */}
-            <div style={{background:'#08101e',border:`1px solid ${configOk()?'#166534':'#f59e0b'}`,borderRadius:14,padding:'14px',marginBottom:16}}>
+            <div style={{background:'#f9fafb',border:`1px solid ${configOk()?'#166534':'#f59e0b'}`,borderRadius:14,padding:'14px',marginBottom:16}}>
               <div style={{fontWeight:700,fontSize:13,color:configOk()?'#4ade80':'#fbbf24',marginBottom:4}}>
                 {configOk()?'✅ Google Sheets conectado':'⚠️ Google Sheets sin configurar'}
               </div>
-              <div style={{fontSize:11,color:'#64748b',marginBottom:12,fontFamily:'DM Mono,monospace',wordBreak:'break-all'}}>
+              <div style={{fontSize:11,color:'#6b7280',marginBottom:12,fontFamily:'DM Mono,monospace',wordBreak:'break-all'}}>
                 {scriptUrl||'Sin URL configurada'}
               </div>
               <button onClick={()=>setShowConfig(true)}
@@ -1563,15 +1590,15 @@ function App(){
             </div>
 
             {/* Catálogo */}
-            <div style={{fontWeight:700,fontSize:14,color:'#e2ecf8',marginBottom:8}}>📦 Insumos — editar precio y rellenables</div>
+            <div style={{fontWeight:700,fontSize:14,color:'#111827',marginBottom:8}}>📦 Insumos — editar precio y rellenables</div>
             <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="🔍 Buscar..." inputMode="search"
-              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #1a3050',background:'#0d1b33',color:'#e2ecf8',fontSize:15,padding:'0 16px',marginBottom:12}}/>
+              style={{width:'100%',height:48,borderRadius:12,border:'1px solid #e5e7eb',background:'#ffffff',color:'#111827',fontSize:15,padding:'0 16px',marginBottom:12}}/>
             {INSUMOS.filter(i=>!busq||i.nombreCorto.toLowerCase().includes(busq.toLowerCase())||i.codigo.includes(busq)).map(ins=>(
               <button key={ins.id} onClick={()=>{setFormEdit({...ins});setModEdit(ins);}}
-                style={{width:'100%',background:'#0d1b33',borderRadius:14,border:'1px solid #1a3050',padding:'14px',marginBottom:8,textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
+                style={{width:'100%',background:'#ffffff',borderRadius:14,border:'1px solid #e5e7eb',padding:'14px',marginBottom:8,textAlign:'left',display:'flex',alignItems:'center',gap:12}}>
                 <div style={{flex:1}}>
                   <div style={{fontWeight:700,fontSize:14}}>{ins.nombreCorto}</div>
-                  <div style={{fontSize:11,color:'#475569',fontFamily:'DM Mono,monospace',marginTop:3}}>
+                  <div style={{fontSize:11,color:'#9ca3af',fontFamily:'DM Mono,monospace',marginTop:3}}>
                     {ins.codigo} · {fmt$(ins.precio)} · ES:{ins.stockES} · FS:{ins.stockFS}
                   </div>
                 </div>
